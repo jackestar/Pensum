@@ -1,3 +1,55 @@
+/* Color Scheme */
+*:root {
+  --main1: #008db8;
+  --main2: #007599;
+  --main3: #005e7a;
+  --main4: #003342;
+  --main5: #001a22;
+  
+  --second1: #00d6a1;
+  --second2: #00a77d;
+  --second3: #008563;
+  --second4: #004b38;
+  --second5: #002018;
+  
+  --backg1: #d30046;
+  --backg2: #b3003b;
+  --backg3: #7a0029;
+  --backg4: #5c001f;
+  --backg5: #27000d;
+  
+  --foreg1: #00e73a;
+  --foreg2: #00b92e;
+  --foreg3: #009225;
+  --foreg4: #005e17;
+  --foreg5: #00300c;
+
+  --gray1:#8f8f8f;
+  --gray2:#858585;
+  --gray3:#272727;
+  --gray4:#1a1a1a;
+  --gray5:#000;
+
+  /* MONOKAI JS */
+  --colorA: #ff6188;
+	--colorB: #fc9867;
+	--colorC: #ffd866;
+	--colorD: #a9dc76;
+	--colorE: #78dce8;
+	--colorF: #ab9df2;
+
+	--colorAs: #FF144E;
+	--colorBs: #FC651C;
+	--colorCs: #FFC519;
+	--colorDs: #88DC35;
+	--colorEs: #33D5E8;
+	--colorFs: #6F55F2;
+
+	--foreground: #fdf9f3;
+	--background: #2c292d;
+
+  }
+
 body {
   position: absolute;
   background: var(--background);
@@ -6,6 +58,7 @@ body {
   flex-flow: wrap;
   font-size: 0.8em;
   overflow-x: hidden;
+  font-family: Montserrat;
 }
 
 section.main {
