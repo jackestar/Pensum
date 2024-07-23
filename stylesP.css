@@ -1,34 +1,5 @@
 /* Color Scheme */
 *:root {
-  --main1: #008db8;
-  --main2: #007599;
-  --main3: #005e7a;
-  --main4: #003342;
-  --main5: #001a22;
-  
-  --second1: #00d6a1;
-  --second2: #00a77d;
-  --second3: #008563;
-  --second4: #004b38;
-  --second5: #002018;
-  
-  --backg1: #d30046;
-  --backg2: #b3003b;
-  --backg3: #7a0029;
-  --backg4: #5c001f;
-  --backg5: #27000d;
-  
-  --foreg1: #00e73a;
-  --foreg2: #00b92e;
-  --foreg3: #009225;
-  --foreg4: #005e17;
-  --foreg5: #00300c;
-
-  --gray1:#8f8f8f;
-  --gray2:#858585;
-  --gray3:#272727;
-  --gray4:#1a1a1a;
-  --gray5:#000;
 
   /* MONOKAI JS */
   --colorA: #ff6188;
@@ -116,7 +87,6 @@ aside div i {
 }
 aside.content h4 {
   font-variant: all-small-caps;
-  /*     font-size: 1.5em; */
   padding: 0.5em;
   background: var(--foreground);
   border-radius: 10em;
@@ -293,7 +263,6 @@ article.scheme ul li.dep {
   transition: 0.2s ease;
 }
 article.scheme .locked {
-  /*     background: var(--colorA); */
   opacity: 0.5;
   transition: 0.2s ease;
 }
@@ -301,7 +270,6 @@ article.scheme .locked {
 article.scheme ul.locked:nth-of-type(4),
 article.scheme ul.locked.x {
   border-left: dotted var(--colorA) 1em;
-  /*         background: var(--colorA); */
 }
 section.bann {
   right: 0;
@@ -309,7 +277,6 @@ section.bann {
   position: fixed;
   margin: 1em;
   z-index: 1001;
-/*   transition: 0.4s ease; */
   display: flex;
   flex-direction: row-reverse;
 }
@@ -328,9 +295,7 @@ section.bann > div {
   height: 5em;
   overflow: hidden;
   display: flex;
-  /* transition: 0.5s ease; */
   flex-direction: column;
-  /*     align-self:center; */
 }
 section.bann > div.look {
   width: 100%;
@@ -356,7 +321,6 @@ section.bann div.icon p {
 }
 section.bann div.look div.icon p {
   font-size: 2.5em;
-  /*     width: 2.5em; */
   text-align: end;
 }
 section.bann div.icon {
@@ -403,8 +367,6 @@ section.bann div.pag > p {
   font-size: 1.5em;
   font-variant: all-petite-caps;
   font-weight: 600;
-/*   text-align: center; */
-  /*     width: 100%; */
 }
 
 div.blk {
@@ -501,7 +463,6 @@ div.pag.sel {
   display: flex;
   width: auto;
   transition: 0.3s ease;
-  /* font-size: 2em; */
   justify-content: center;
 }
 div.pag.sel div.icon {
