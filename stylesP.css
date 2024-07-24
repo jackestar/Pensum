@@ -48,7 +48,12 @@
 	--foreground: #fdf9f3;
 	--background: #2c292d;
 
-  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
 
 body {
   position: absolute;
@@ -58,7 +63,7 @@ body {
   flex-flow: wrap;
   font-size: 0.8em;
   overflow-x: hidden;
-  font-family: Montserrat;
+  font-family: Montserrat, sans-serif;
 }
 
 section.main {
