@@ -4,7 +4,7 @@
     "short_name":"Pensum UNEFA",
     "background_color": "#2c292d",
     "display":"standalone",
-    "theme_color": "#33D5E8",
+    "theme_color": "#FF144E",
     "start_url":"./Pensum.html",
     "description":"generador de pensum de carreras UNEFA autogerado, arbol de prelaciones, Electronica 2024, carga tu record academico",
     "icons":[
