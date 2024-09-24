@@ -311,6 +311,7 @@ section.bann div.icon img {
   width: 3em;
 }
 section.bann div.look div.icon img {
+  padding:1em;
   width: 3em;
 }
 section.bann div.icon p {
@@ -358,7 +359,7 @@ section.bann div.look div.hcont {
 section.bann div div.icon {
   background: var(--foreground);
   width: max-content;
-  padding: 0.85em;
+  /* padding: 0.85em; */
   border-radius: 100%;
 }
 section.bann div.pag > p {
@@ -389,15 +390,15 @@ i.back {
   font-size: 3em;
   font-weight: 800;
   color: var(--foreground);
-  padding: 0.1em;
-  width: 1.5em;
-  height: 1.5em;
+  padding: .3em;
+  /*! width: 1.5em; */
+  /*! height: 1.5em; */
   text-align: center;
   clip-path: circle();
   user-select: none;
   cursor: pointer;
   align-self: center;
-  margin: 1em;
+  margin: .5em;
 }
 div.help .hcont {
   margin-bottom: 2em;
@@ -517,20 +518,22 @@ div.but {
   justify-content: center;
 }
 
+br {
+  margin: auto;
+}
+
 @media (orientation: portrait) {
   aside.content {
-    flex: 1 100vw;
+    z-index: 1001;
+    height: auto;
     min-height: auto;
-    max-height: 25vh;
-    height: 25vh;
   }
-  section.main {
-    width: 100vw;
-    font-size: 1.75em;
+   section.main {
+    width: auto;
   }
   section.main.hide {
-    height: 75vh;
-    min-height: 75vh;
+    min-height: auto;
+    width: auto;
   }
   section.bann > div {
     width: 10em;
@@ -561,11 +564,9 @@ div.but {
   section.bann > div:not(.look) {
     max-height: 10em;
   }
-  i.back {
-    font-size: 7em;
-  }
   aside i.back {
     transform: rotate(90deg);
-    font-size: 5em;
+    font-size: 3em;
+    /*! text-align: center; */
   }
 }

@@ -28,17 +28,17 @@ let table = {
     // Default Electronica
     // Consulta a la Base de datos...
     this.condProfecinal = true;
-    this.Carrera = "Ingenieria Electronica";
+    this.Carrera = "Ingeniería Electronica";
     this.Semestres = 9;
     this.unidCrditTot = 228;
     this.Materias = [
-      new materia("Educacion Ambiental", "ADG-25132", 2, 1, [2, 1, 0]),
+      new materia("Educación Ambiental", "ADG-25132", 2, 1, [2, 1, 0]),
       new materia("SoCiTec", "ADG-25123", 3, 1, [2, 2, 0]),
       new materia("Ingles I", "IDM-24113", 3, 1, [2, 2, 0]),
       new materia("Dibujo", "MAT-21212", 2, 1, [1, 3, 0]),
-      new materia("Matematica I", "MAT-21215", 5, 1, [4, 2, 0], [[5, true]]),
+      new materia("Matemática I", "MAT-21215", 5, 1, [4, 2, 0], [[5, true]]),
       new materia(
-        "Geometria Analitica",
+        "Geometría Analítica",
         "MAT-21524",
         4,
         1,
@@ -49,9 +49,9 @@ let table = {
       new materia("Defensa I", "DIN-21113", 3, 1, [2, 2, 0]),
 
       new materia("Ingles II", "IDM-24123", 3, 2, [2, 2, 0], [[2, false]]),
-      new materia("Quimica General", "QUF-22014", 4, 2, [2, 2, 3]),
+      new materia("Química General", "QUF-22014", 4, 2, [2, 2, 3]),
       new materia(
-        "Fisica I",
+        "Física I",
         "QUF-23015",
         5,
         2,
@@ -62,7 +62,7 @@ let table = {
         ]
       ),
       new materia(
-        "Matematica II",
+        "Matemática II",
         "MAT-21225",
         5,
         2,
@@ -87,7 +87,7 @@ let table = {
       new materia("Defensa II", "DIN-21123", 3, 2, [2, 2, 0], [[7, false]]),
 
       new materia(
-        "Fisica II",
+        "Física II",
         "QUF-23025",
         5,
         3,
@@ -98,7 +98,7 @@ let table = {
         ]
       ),
       new materia(
-        "Matematica III",
+        "Matemática III",
         "MAT-21235",
         5,
         3,
@@ -113,7 +113,7 @@ let table = {
         [2, 4, 0],
         [[11, false]]
       ),
-      new materia("Programacion", "SYC-22113", 3, 3, [2, 0, 3], [[12, false]]),
+      new materia("Programación", "SYC-22113", 3, 3, [2, 0, 3], [[12, false]]),
       new materia(
         "Transformadas Integrales",
         "MAT-20254",
@@ -128,7 +128,7 @@ let table = {
       new materia("Defensa III", "DIN-21133", 3, 3, [2, 2, 0], [[14, false]]),
 
       new materia(
-        "Redes Electricas I",
+        "Redes Eléctricas I",
         "ELC-30114",
         4,
         4,
@@ -150,7 +150,7 @@ let table = {
         ]
       ),
       new materia(
-        "Senales y Sistemas Dinamicos",
+        "Senales y Sistemas Dinámicos",
         "ELN-33154",
         4,
         4,
@@ -158,7 +158,7 @@ let table = {
         [[19, false]]
       ),
       new materia(
-        "Mediciones Electricas",
+        "Mediciones Eléctricas",
         "ELC-30215",
         5,
         4,
@@ -174,7 +174,7 @@ let table = {
         [[21, true]]
       ),
       new materia(
-        "Teoria Electromagnetica",
+        "Teoría Electromagnética",
         "ELN-30314",
         4,
         4,
@@ -187,7 +187,7 @@ let table = {
       new materia("Defensa IV", "DIN-31143", 3, 4, [2, 2, 0], [[20, false]]),
 
       new materia(
-        "Redes Electricas II",
+        "Redes Eléctricas II",
         "ELC-30125",
         5,
         5,
@@ -217,7 +217,7 @@ let table = {
         [[25, false]]
       ),
       new materia(
-        "Teoria de Control Automatico",
+        "Teoría de Control Automático",
         "ELN-33155",
         5,
         5,
@@ -225,7 +225,7 @@ let table = {
         [[23, false]]
       ),
       new materia(
-        "Programacion Orientada a Objetos",
+        "Programación Orientada a Objetos",
         "ELN-34105",
         5,
         5,
@@ -235,7 +235,7 @@ let table = {
       new materia("Defensa V", "DIN-31153", 3, 5, [2, 2, 0], [[27, false]]),
 
       new materia(
-        "Conversion Electromecanica",
+        "Conversion Electromecánica",
         "ELC-32105",
         5,
         6,
@@ -246,7 +246,7 @@ let table = {
         ]
       ),
       new materia(
-        "Instrumentacion Industrial",
+        "Instrumentación Industrial",
         "ELN-33415",
         5,
         6,
@@ -281,7 +281,7 @@ let table = {
         [[29, false]]
       ),
       new materia(
-        "Marco Legal Para El Ejercicion De La Ingenieria",
+        "Marco Legal Para El Ejercicio De La Ingeniería",
         "CJU-37314",
         4,
         6,
@@ -326,19 +326,19 @@ let table = {
         [[36, false]]
       ),
       new materia(
-        "Metodologia de la Investigacion",
+        "Metodología de la Investigación",
         "ADG-30214",
         4,
         7,
         [3, 2, 0],
         162
       ),
-      new materia("Electiva Tecnica", "", 3, 7, [3, 1, 0], 162),
-      new materia("Electiva No Tecnica", "", 3, 7, [3, 0, 0], 162),
+      new materia("Electiva Técnica", "", 3, 7, [3, 1, 0], 162),
+      new materia("Electiva No Técnica", "", 3, 7, [3, 0, 0], 162),
       new materia("Defensa VII", "DIN-31173", 3, 7, [2, 2, 0], [[40, false]]),
 
       new materia(
-        "Automatizacion Y Control Industrial",
+        "Automatización Y Control Industrial",
         "ELN-33324",
         4,
         8,
@@ -365,15 +365,15 @@ let table = {
         ]
       ),
       new materia(
-        "Seminarion de Control",
+        "Seminario de Control",
         "ELN-33301",
         1,
         8,
         [0, 2, 0],
         [[44, false]]
       ),
-      new materia("Electiva Tecnica", "", 3, 8, [3, 1, 0], 195),
-      new materia("Electiva No Tecnica", "", 3, 8, [3, 0, 0], 195),
+      new materia("Electiva Técnica", "", 3, 8, [3, 1, 0], 195),
+      new materia("Electiva No Técnica", "", 3, 8, [3, 0, 0], 195),
       new materia("Defensa VIII", "DIN-31183", 3, 8, [2, 2, 0], [[48, false]]),
 
       new materia("TEG", "", 10, 9, [0, 0, 0], 218),
@@ -560,7 +560,7 @@ let table = {
       temppre = "";
     if (this.Materias[materia].prelac != 0) {
       if (typeof this.Materias[materia].prelac == "number")
-        temppre += `<i>Unidades de Credito: ${this.Materias[materia].prelac}</i><br><i>Unidades de Credito Actuales: ${this.unidCrdit}</i>`;
+        temppre += `<i>Unidades de Crédito: ${this.Materias[materia].prelac}</i><br><i>Unidades de Crédito Actuales: ${this.unidCrdit}</i>`;
       else
         this.Materias[materia].prelac.forEach((e) => {
           let temp = "<li class='";
@@ -585,7 +585,7 @@ let table = {
           "<b>Co-Prelaciones</b><ul class='list'>" + tempcop + "</ul>";
     }
     this.info.innerHTML =
-      tempString + `<i class="back" onclick="table.infoT()">→</i>`;
+      tempString + `<i class="back" onclick="table.infoT()">➡</i>`;
     if (
       this.materiaSelected == undefined ||
       (!this.Materias[materia].avaible && this.materiaSelected == materia) ||
