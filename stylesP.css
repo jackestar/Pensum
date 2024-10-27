@@ -535,15 +535,8 @@ br {
     min-height: auto;
     width: auto;
   }
-  section.bann > div {
-    width: 10em;
-    height: 10em;
-  }
   section.bann > div.look {
     min-height: 50%;
-  }
-  section.bann div div.icon img {
-    width: 5em;
   }
   section.bann div.look div.icon img {
     width: 6em;
@@ -556,7 +549,7 @@ br {
   }
   section.bann {
     flex-direction: column;
-    justify-content: center
+    justify-content: center;
   }
   section.bann div.look {
     max-height: 50%;
