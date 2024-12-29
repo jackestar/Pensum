@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml" />
+        <link rel="stylesheet" href="./styles/stylesP.css" />
+        <title>Pensum Generator</title>
+        <style>
+            main {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section class="logo">
+                <h1>Pensum Generator</h1>
+                <div class="logo">
+                    <img src="./favicon.svg" alt="Logo" />
+                </div>
+            </section>
+            <section class="interact">
+                <div class="recent">
+                    <h3>Actividad Reciente</h3>
+                </div>
+                <div class="generate">
+                    <h2>Generar</h2>
+                    <div  data-url="./create.html#some" class="create">
+                        <img src="./icons/new_window.svg" />
+                        <h3>Crear Nuevo Pensum</h3>
+                    </div>
+                    <div data-url="./create.html#some">
+                        <img src="./icons/edit_square.svg" />
+                        <h3>Importar Pensum</h3>
+                    </div>
+                </div>
+                <div class="show">
+                    <h2>Ver</h2>
+                    <div data-url="./view.html#some">
+                        <img src="./icons/file_open.svg" />
+                        <h3>Abrir Pensum</h3>
+                    </div>
+                    <div data-url="./view.html#some">
+                        <img src="./icons/open.svg" />
+                        <h3>Importar Record</h3>
+                        <!-- <p><i>UNEFA</i></p> -->
+                    </div>
+                </div>
+                <div class="doc">
+                    <a href="https://jackestar.netlify.app/Blog/">
+                        <!-- <div> -->
+                            <img src="./icons/article.svg" />
+                            <h2>Documentación</h2>
+                        <!-- </div> -->
+                    </a>
+                </div>
+            </section>
+            <section class="footer">
+                <p>
+                    Desarrollado por
+                    <a href="github.com/jackestar">Jackestar</a> 2024
+                </p>
+            </section>
+        </main>
+        <script src="./JS/load.js"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', ()=> {
+            const main = document.querySelector('main');
+            main.classList.add('show');
+            historyNav()
+            })
+        
+        </script>
+    </body>
+</html>

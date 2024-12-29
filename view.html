@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml" />
+        <link rel="stylesheet" href="./styles/stylesP.css" />
+        <title>Ver Pensum | Pensum Generator</title>
+        <style>
+            main {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <nav>
+                <img data-url="./index.html" src="./icons/arrow_back.svg" alt="back"/>
+            </nav>
+            <section class="logo">
+                <h1>Pensum Generator</h1>
+                <div class="logo">
+                    <img src="./favicon.svg" alt="Logo" />
+                </div>
+            </section>
+            <section class="interact">
+                <h3>View</h3>
+            </section>
+            <section class="footer">
+                <p>
+                    Desarrollado por
+                    <a href="github.com/jackestar">Jackestar</a> 2024
+                </p>
+            </section>
+        </main>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const main = document.querySelector("main");
+                main.classList.add("show");
+                historyNav();
+            });
+        </script>
+        <script src="./JS/load.js"></script>
+    </body>
+</html>

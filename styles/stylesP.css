@@ -1,0 +1,258 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Montserrat, Ubuntu, Arial, Helvetica, sans-serif;
+}
+
+:root {
+    /* Adapted Colors with Material Design 3 Convention */
+    
+    /* colorA (Based on --colorA) */
+    --colorA-10: #3f0018;
+    --colorA-20: #67002a;
+    --colorA-30: #90003e;
+    --colorA-40: #b70053;
+    --colorA-50: #d80067;
+    --colorA-60: #ff6188;
+    --colorA-70: #ff88a0;
+    --colorA-80: #ffa9b8;
+    --colorA-90: #ffdce5;
+    --colorA-95: #ffeef2;
+    --colorA-99: #fffbfc;
+  
+    /* colorB (Based on --colorB) */
+    --colorB-10: #3a1700;
+    --colorB-20: #632700;
+    --colorB-30: #8b3700;
+    --colorB-40: #b24700;
+    --colorB-50: #d45600;
+    --colorB-60: #fc9867;
+    --colorB-70: #ffb891;
+    --colorB-80: #ffccb4;
+    --colorB-90: #ffe4d7;
+    --colorB-95: #fff0eb;
+    --colorB-99: #fffaf8;
+  
+    /* Tertiary (Based on --colorC) */
+    --colorC-10: #3a2b00;
+    --colorC-20: #634500;
+    --colorC-30: #8d6000;
+    --colorC-40: #b67a00;
+    --colorC-50: #d89500;
+    --colorC-60: #ffd866;
+    --colorC-70: #ffe68e;
+    --colorC-80: #fff4b3;
+    --colorC-90: #fffadd;
+    --colorC-95: #fffef3;
+    --colorC-99: #fffcf7;
+  
+    /* Neutral (Based on --colorD) */
+    --colorD-10: #122101;
+    --colorD-20: #243f02;
+    --colorD-30: #386003;
+    --colorD-40: #4d8104;
+    --colorD-50: #64a205;
+    --colorD-60: #a9dc76;
+    --colorD-70: #c3e8a0;
+    --colorD-80: #daf4c3;
+    --colorD-90: #f0fadf;
+    --colorD-95: #f7fde8;
+    --colorD-99: #fcfef7;
+  
+    /* Accent (Based on --colorE) */
+    --colorE-10: #001f27;
+    --colorE-20: #003842;
+    --colorE-30: #00535f;
+    --colorE-40: #00707d;
+    --colorE-50: #008d9c;
+    --colorE-60: #78dce8;
+    --colorE-70: #a3e8f1;
+    --colorE-80: #cff5fa;
+    --colorE-90: #e8fafd;
+    --colorE-95: #f4fdfe;
+    --colorE-99: #fcfeff;
+  
+    /* Highlight (Based on --colorF) */
+    --colorF-10: #1a1329;
+    --colorF-20: #30224b;
+    --colorF-30: #48326d;
+    --colorF-40: #60418f;
+    --colorF-50: #7850b2;
+    --colorF-60: #ab9df2;
+    --colorF-70: #c3bdf6;
+    --colorF-80: #e0d9fa;
+    --colorF-90: #f3edfd;
+    --colorF-95: #faf6fe;
+    --colorF-99: #fefcff;
+
+    --neutral-0: #000000;
+    --neutral-10: #1e1c1e;
+    --neutral-20: #393739;
+    --neutral-30: #545254;
+    --neutral-40: #6e6c6e;
+    --neutral-50: #898689;
+    --neutral-60: #a3a1a3;
+    --neutral-70: #bebcbe;
+    --neutral-80: #d8d6d8;
+    --neutral-90: #f2eff2;
+    --neutral-95: #faf7fa;
+    --neutral-99: #fffbfc;
+    --neutral-100: #ffffff;
+    --foreground: #fdf9f3;
+    --background: #2c292d;
+  
+  }  
+
+body {
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    justify-content: center;
+    background: var(--neutral-10);
+    overflow: hidden;
+}
+
+/* load */
+
+*[data-url] {
+    cursor:pointer;
+}
+
+/* General Main */
+
+main {
+    background: var(--background);
+    color: var(--foreground);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100vh;
+    overflow-y: scroll; /* Enable vertical scrolling */
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For IE and Edge */
+}
+
+body main.show {
+    display:flex;
+}
+
+main::-webkit-scrollbar {
+    display: none; /* Hide the scrollbar for WebKit browsers */
+}
+
+section.logo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    top:0;
+    margin: 2em 0;
+}
+
+section.logo h1 {
+    padding: 1rem;
+    font-variant: all-small-caps;
+    font-size: 2em;
+}
+
+section.logo div.logo img {
+    width: 100px;
+    height: 100px;
+    padding:1em;
+    background:var(--neutral-95);
+    border-radius: 1em;
+}
+
+main section h3 {
+    text-align: center;
+    margin-left: 1em;
+}
+
+section.interact>div {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    font-variant: all-small-caps;
+}
+
+section.interact div>*>h2 {
+    flex: 1 100%;
+    margin-left: 1em;
+}
+
+section.interact>div>* {
+    padding: 1rem;
+    margin:.25rem 0;
+    border-radius: 1em;
+    transition:.1s ease-out;
+    display: flex;
+    width: 90%;
+    text-decoration: none;
+}
+
+section.interact div>*:hover {
+    transition:.1s ease-in;
+}
+
+section.interact div:not(.doc) div {
+    background: var(--colorA-30);
+    color: var(--colorA-90);
+}
+
+section.interact div:not(.doc) div:hover {
+    background: var(--colorA-90);
+    color: var(--colorA-40);
+}
+
+section.interact div.recent {
+    display: none;
+}
+
+section.interact div.doc a {
+    background: var(--colorB-40);
+    color: var(--colorB-90);
+    margin-top: 1em;
+}
+
+section.interact div.doc a:hover {
+    background: var(--colorB-90);
+    color: var(--colorB-30);
+}
+
+section.interact div *:hover>img {
+    filter:invert(1);
+}
+
+section.footer {
+    margin-top: 2em;
+    padding :1em 0;
+    width: 90%;
+    border-top: .2em solid var(--foreground);
+    text-align: center;
+}
+
+section.footer a {
+    color: var(--foreground);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+section.footer a:hover {
+    text-decoration: underline;
+}
+
+/* Nav */
+main nav {
+    /* width: 2em; */
+    width: 100%;
+    /* background-color: #000000; */
+}
+
+main nav img {
+    padding: 1em;
+    /* justify-self: center; */
+}
