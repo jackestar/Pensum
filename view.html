@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml" />
         <link rel="stylesheet" href="./styles/stylesP.css" />
+        <link rel="prefetch" href="./create.html" as="document" />
+        <link rel="prefetch" href="./index.html" as="document" />
         <title>Ver Pensum | Pensum Generator</title>
         <style>
             main {
@@ -15,7 +17,11 @@
     <body>
         <main>
             <nav>
-                <img data-url="./index.html" src="./icons/arrow_back.svg" alt="back"/>
+                <img
+                    data-url="./index.html"
+                    src="./icons/arrow_back.svg"
+                    alt="back"
+                />
             </nav>
             <section class="logo">
                 <h1>Pensum Generator</h1>
@@ -24,22 +30,32 @@
                 </div>
             </section>
             <section class="interact">
-                <h3>View</h3>
+                <div class="aviable">
+                </div>
+                <div>
+                    <mr></mr>
+                    <div data-url="#open">
+                        <img src="./icons/open.svg" />
+                        <h3>Abrir</h3>
+                    </div>
+                </div>
             </section>
             <section class="footer">
                 <p>
                     Desarrollado por
-                    <a href="github.com/jackestar">Jackestar</a> 2024
+                    <a href="https://github.com/jackestar">Jackestar</a> 2024
                 </p>
             </section>
         </main>
+        <canvas class="arrow"></canvas>
+        <script src="./JS/pensum.js"></script>
+        <script src="./JS/load.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 const main = document.querySelector("main");
                 main.classList.add("show");
-                historyNav();
+                scriptUpdate();
             });
         </script>
-        <script src="./JS/load.js"></script>
     </body>
 </html>

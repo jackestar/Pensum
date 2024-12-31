@@ -107,10 +107,12 @@
 body {
     min-height: 100vh;
     min-width: 100vw;
+    /* width:100%; */
     display: flex;
     justify-content: center;
     background: var(--neutral-10);
-    overflow: hidden;
+    overflow: auto;
+    position:absolute;
 }
 
 /* load */
@@ -129,9 +131,10 @@ main {
     justify-content: space-between;
     align-items: center;
     height: 100vh;
-    overflow-y: scroll; /* Enable vertical scrolling */
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none; /* For IE and Edge */
+    min-width: 50vw;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 body main.show {
@@ -142,6 +145,8 @@ main::-webkit-scrollbar {
     display: none; /* Hide the scrollbar for WebKit browsers */
 }
 
+/* Logo */
+
 section.logo {
     display: flex;
     flex-direction: column;
@@ -149,6 +154,7 @@ section.logo {
     align-items: center;
     top:0;
     margin: 2em 0;
+    align-self:center;
 }
 
 section.logo h1 {
@@ -255,4 +261,108 @@ main nav {
 main nav img {
     padding: 1em;
     /* justify-self: center; */
+}
+
+article.pensum {
+    display: flex;
+    min-width: 100vw;
+    min-height: 100vh;
+    /* overflow-x: scroll; */
+    /* overflow-y: scroll; */
+    /* scrollbar-width: none; */
+    /* -ms-overflow-style: none; */
+}
+
+article.pensum ul.semester {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    list-style-type: none;
+    padding: 1em;
+}
+
+article.pensum ul.semester li {
+    min-width: 13em;
+    min-height: 4em;
+    cursor: pointer;
+    user-select: none;
+    margin: .5em 0;
+    font-variant: all-small-caps;
+    padding:.5em;
+    border-radius: .5em;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+article.pensum ul.semester li {
+    background: var(--neutral-90);
+    color: var(--neutral-10);
+}
+
+article.pensum ul.semester li:first-of-type {
+    background: var(--colorA-50);
+    color: var(--neutral-10);
+    min-height: 2em;
+}
+
+article.pensum ul.semester li:first-of-type p {
+    font-size: 1.25em;
+    font-weight: bold;
+    width: 100%;
+    text-wrap: nowrap;
+}
+
+article.pensum ul.semester li:first-of-type:hover {
+    background: var(--colorA-60);
+}
+
+/* Element Status */
+
+article.pensum ul.semester li.corequired {
+    border:.2em solid var(--colorA-50);
+}
+
+article.pensum ul.semester li.unavailable {
+    /* opacity:.5; */
+    background: var(--neutral-50);
+    cursor:default;
+}
+
+article.pensum ul.semester li.unavailable:hover {
+    background: var(--neutral-60);
+}
+
+/* Selection Mode */
+
+
+article.pensum.selection ul.semester li {
+    opacity: .2;
+}
+
+article.pensum.selection ul.semester li.selected {
+    opacity: 1;
+    background: var(--neutral-90);
+}
+
+article.pensum.selection ul.semester li.sel-act{
+    background: var(--neutral-80);
+    opacity:1;
+}
+
+article.pensum.selection ul.semester li:first-child {
+    opacity: 1;
+}
+
+/* canvas */
+
+canvas.arrow {
+    position:absolute;
+    top:0;
+    z-index:1000;
+}
+
+article.pensum {
+    z-index: 1001;
 }
