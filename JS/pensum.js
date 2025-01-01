@@ -68,8 +68,51 @@ const filterJSON = async (
         return [];
     }
 
-    pensum.courses = pensum.courses.map((course) => {
-        filtered = {};
+    pensum.totalCredits = 0;
+    pensum.selectionMode = 0;
+    pensum.elementSelected = [];
+    pensum.element = [];
+
+    pensum.coursesBySemester = Array.from(
+        { length: pensum.semesters },
+        () => []
+    );
+
+    pensum.courses = pensum.courses.map((course, index) => {
+        let sem = course.semester - 1;
+        course.index = index;
+        course.passes = false;
+        course.required = course.required ? course.required : [];
+        if (sem) course.available = false;
+        if (!course.prerequisites.length) course.available = true;
+        if (course.corequisites.length) {
+            course.corequisites.forEach((corequisite, index) => {
+                const co = pensum.courses.find((c) => c.code === corequisite);
+                co.index =
+                    co.index == undefined
+                        ? pensum.courses.findIndex(
+                              (c) => c.code === corequisite
+                          )
+                        : co.index;
+                course.corequisites[index] = co.index;
+                co.corequired = true;
+                // pensum.courses[co.index] = co;
+            });
+        }
+        if (course.prerequisites.length) {
+            course.prerequisites.forEach((prerequisite, index) => {
+                const pr = pensum.courses.find((c) => c.code === prerequisite);
+                pr.required
+                    ? pr.required.push(course.index)
+                    : (pr.required = [course.index]);
+                course.prerequisites[index] = pr.index;
+                // pensum.courses[pr.index] = pr;
+            });
+        }
+        pensum.coursesBySemester[sem].push(course);
+
+        filtered = course;
+        pensum.totalCredits += course.credits;
         courseKeys.forEach((key) => {
             if (course.hasOwnProperty(key)) {
                 filtered[key] = course[key];
@@ -79,15 +122,13 @@ const filterJSON = async (
     });
     return pensum;
 };
-pre = importJSON("/pensums/electronica.json");
-test = filterJSON(pre);
 
 // Element Builder
 
 const addListElement = (name, icon, url) => {
     const div = document.createElement("div");
-    div.setAttribute("data-url", url);
-    div.classList.add("avaible-item");
+    if (url) div.setAttribute("data-url", url);
+    div.classList.add("available-item");
 
     const img = document.createElement("img");
     img.src = icon;
@@ -97,52 +138,13 @@ const addListElement = (name, icon, url) => {
 
     div.appendChild(img);
     div.appendChild(h3);
-    div.addEventListener("click", (e) => history.pushState({}, "", url));
+    // div.addEventListener("click", (e) => history.pushState({}, "", url));
     return div;
 };
 
 const createPensumTable = (pensum) => {
     actualPensum = pensum;
-    actualPensum.selectionMode = 0;
-    actualPensum.elementSelected = [];
-    actualPensum.element = [];
     semesters = pensum.semesters;
-
-    let coursesBySemester = Array.from({ length: semesters }, () => []);
-
-    actualPensum.courses.forEach((course, index) => {
-        let sem = course.semester - 1;
-        course.index = index;
-        course.required = course.required ? course.required : [];
-        if (sem) course.available = false;
-        if (!course.prerequisites.length) course.available = true;
-        if (course.corequisites.length) {
-            course.corequisites.forEach((corequisite, index) => {
-                const co = actualPensum.courses.find(
-                    (c) => c.code === corequisite
-                );
-                co.index = actualPensum.courses.findIndex(
-                    (c) => c.code === corequisite
-                );
-                console.log(co, co.index);
-                course.corequisites[index] = co.index;
-                co.corequired = true;
-                actualPensum.courses[co.index] = co;
-            });
-        }
-        if (course.prerequisites.length) {
-            course.prerequisites.forEach((prerequisite, index) => {
-                const pr = actualPensum.courses.find(
-                    (c) => c.code === prerequisite
-                );
-                pr.required
-                    ? pr.required.push(course.index)
-                    : (pr.required = [course.index]);
-                course.prerequisites[index] = pr.index;
-            });
-        }
-        coursesBySemester[sem].push(course);
-    });
 
     const article = document.createElement("article");
     article.classList.add("pensum");
@@ -156,7 +158,7 @@ const createPensumTable = (pensum) => {
         li.appendChild(p);
         ul.appendChild(li);
 
-        coursesBySemester[semester].forEach((course) => {
+        actualPensum.coursesBySemester[semester].forEach((course) => {
             const li = document.createElement("li");
             li.addEventListener("click", (e) => {
                 actualPensum.elementSelected = elementAction(li, course.index);
@@ -164,11 +166,26 @@ const createPensumTable = (pensum) => {
 
             const h3 = document.createElement("h3");
             h3.textContent = course.name;
+
             const p = document.createElement("p");
             p.textContent = course.code;
+
+            const badges = document.createElement("div");
+            badges.classList.add("badge");
+
+            const info = document.createElement("div");
+            info.classList.add("info");
+            const infoIcon = document.createElement("img");
+            infoIcon.src = "/icons/info.svg";
+            info.addEventListener("click", (e) => infoAction(course.index));
+            info.appendChild(infoIcon);
+
+            badges.appendChild(info);
+
             li.appendChild(h3);
             li.appendChild(p);
-            course.element = li;
+            li.appendChild(badges);
+            actualPensum.courses[course.index].element = li;
             ul.appendChild(li);
             updateCourse(li, course.index);
         });
@@ -178,14 +195,93 @@ const createPensumTable = (pensum) => {
     return article;
 };
 
+const drawPensumTable = (list) => {
+    const article = document.querySelector("article.pensum");
+    if (article) article.remove();
+    main = document.querySelector("main");
+
+    let pensumTable = createPensumTable(list);
+    actualPensum.element = pensumTable;
+
+    main.classList.remove("show");
+    document.body.appendChild(pensumTable);
+    actualPensum.em = parseInt(
+        window
+            .getComputedStyle(document.querySelector("article.pensum ul"))
+            .padding.slice(0, -2)
+    );
+
+    actualPensum.courses.forEach((course) => {
+        const posElem = course.element;
+        posElem.top = [
+            posElem.offsetLeft + posElem.offsetWidth / 2,
+            posElem.offsetTop,
+        ];
+        posElem.bottom = [
+            posElem.offsetLeft + posElem.offsetWidth / 2,
+            posElem.offsetTop + posElem.offsetHeight,
+        ];
+        posElem.right = [
+            posElem.offsetLeft + posElem.offsetWidth,
+            posElem.offsetTop + posElem.offsetHeight / 2,
+        ];
+        posElem.left = [
+            posElem.offsetLeft,
+            posElem.offsetTop + posElem.offsetHeight / 2,
+        ];
+    });
+    initCanvas();
+};
+
+const drawAside = async () => {
+    const aside = document.querySelector("aside");
+    if (aside) return;
+    const response = await fetch("/aside.html");
+    if (response.ok) {
+        const newContent = await response.text();
+
+        // Extract response
+        const parser = new DOMParser();
+        const doc = parser
+            .parseFromString(newContent, "text/html")
+            .querySelector("aside");
+
+        // Replace the content
+        document.body.appendChild(doc);
+
+        asideUpdate(doc);
+    } else {
+        console.error("Failed to load aside.");
+    }
+    scriptUpdate();
+};
+
+let asideUpdate = (doc) => {
+    switch (actualPensum.selectionMode) {
+        case 0:
+            doc.classList = ["star"];
+            break;
+        case 1:
+            doc.classList = ["path"];
+            break;
+        default:
+            break;
+    }
+};
+
 updateCourse = (element, index) => {
     const course = actualPensum.courses[index];
     if (course.available) {
         element.classList.remove("unavailable");
         if (course.corequired) element.classList.add("corequired");
         else element.classList.remove("corequired");
+
+        if (course.passes) element.classList.add("passed");
+        else element.classList.remove("passed");
     } else {
         element.classList.add("unavailable");
+        if (course.availableNext) element.classList.add("available-next");
+        else element.classList.remove("available-next");
     }
     return element;
 };
@@ -200,9 +296,15 @@ const elementAction = (element, index) => {
     ctx.beginPath();
 
     actualPensum.courses.forEach((course) => {
-        course.element.classList.remove("sel-act");
+        course.element.classList.remove(
+            "sel-act",
+            "coreq",
+            "prereq",
+            "required"
+        );
     });
     course = actualPensum.courses[index];
+
     if (actualPensum.selectionMode == 0) {
         // Star Mode
         if (actualPensum.elementSelected.length) {
@@ -223,8 +325,14 @@ const elementAction = (element, index) => {
                 if (element.bottom[0] == reElement.top[0])
                     ctx.lineTo(reElement.top[0], reElement.top[1]);
                 else {
-                    ctx.lineTo(element.bottom[0], reElement.top[1] - actualPensum.em);
-                    ctx.lineTo(reElement.top[0], reElement.top[1] - actualPensum.em);
+                    ctx.lineTo(
+                        element.bottom[0],
+                        reElement.top[1] - actualPensum.em
+                    );
+                    ctx.lineTo(
+                        reElement.top[0],
+                        reElement.top[1] - actualPensum.em
+                    );
                     ctx.lineTo(reElement.top[0], reElement.top[1]);
                 }
             } else {
@@ -232,8 +340,14 @@ const elementAction = (element, index) => {
                 if (element.bottom[0] == reElement.top[0])
                     ctx.lineTo(reElement.bottom[0], reElement.bottom[1]);
                 else {
-                    ctx.lineTo(element.bottom[0],reElement.bottom[1] + actualPensum.em);
-                    ctx.lineTo(reElement.bottom[0], reElement.bottom[1]+ actualPensum.em);
+                    ctx.lineTo(
+                        element.bottom[0],
+                        reElement.bottom[1] + actualPensum.em
+                    );
+                    ctx.lineTo(
+                        reElement.bottom[0],
+                        reElement.bottom[1] + actualPensum.em
+                    );
                     ctx.lineTo(reElement.bottom[0], reElement.bottom[1]);
                 }
             }
@@ -248,8 +362,7 @@ const elementAction = (element, index) => {
             ctx.moveTo(element.left[0], element.left[1]);
             ctx.lineTo(element.left[0] - actualPensum.em, element.left[1]);
             ctx.lineTo(element.left[0] - actualPensum.em, reElement.right[1]);
-            ctx.lineTo(reElement.right[0], reElement.right[1]
-            );
+            ctx.lineTo(reElement.right[0], reElement.right[1]);
             ctx.stroke();
         });
         course.required.forEach((req) => {
@@ -262,10 +375,154 @@ const elementAction = (element, index) => {
 
             ctx.stroke();
         });
-
-        updateCourse(element, index);
+    } else if (actualPensum.selectionMode == 1) {
+        // Path Mode
+        if (course.available) {
+            course.passes = !course.passes;
+            course.required.forEach((req) => {
+                const reCourse = actualPensum.courses[req];
+                // console.log(reCourse,reCourse.prerequisites)
+                let av = false;
+                if (reCourse.prerequisites)
+                    av = reCourse.prerequisites.every((prereq) => {
+                        // console.log(prereq,actualPensum.courses[prereq].passes,actualPensum.courses[prereq])
+                        if (!actualPensum.courses[prereq].passes) {
+                            reCourse.passes = false;
+                            return false;
+                        }
+                        return true;
+                    });
+                if (av) {
+                    reCourse.availableNext = true;
+                    updateCourse(reCourse.element, reCourse.index);
+                } else {
+                    reCourse.availableNext = false;
+                    updateCourse(reCourse.element, reCourse.index);
+                }
+            });
+            // element.classList.toggle("passed");
+        }
     }
+
+    updateCourse(element, index);
     return [element, index];
+};
+
+const infoAction = (index) => {
+
+    const infoOld = document.querySelector(".infoBanner");
+    if (infoOld) infoOld.remove();
+    // window.scrollTo(0, 0);
+    const course = actualPensum.courses[index];
+    const info = document.createElement("div");
+    info.classList.add("infoBanner");
+    info.addEventListener("click", (e) => e.target == info?info.remove():null);
+
+    const cont = document.createElement("div");
+
+    const name = document.createElement("h3");
+    name.textContent = course.name;
+    cont.appendChild(name);
+
+    if (course.code) {
+        const code = document.createElement("p");
+        code.textContent = course.code;
+        code.classList.add("code");
+        cont.appendChild(code);
+    }
+
+    if (course.description) {
+        const description = document.createElement("p");
+        description.textContent = course.description;
+        description.classList.add("description");
+        cont.appendChild(description);
+    }
+
+    if (course.credits) {
+        const credits = document.createElement("p");
+        credits.textContent = `Créditos: ${course.credits}`;
+        cont.appendChild(credits);
+    }
+
+    if (course.hours) {
+        const hours = document.createElement("p");
+        hours.textContent = `Horas: ${course.hours.reduce((i, act) => i + act, 0)}`;
+        cont.appendChild(hours);
+    }
+
+    if (course.prerequisites.length) {
+        const h4 = document.createElement("h4");
+        h4.textContent = "Requisitos";
+        cont.appendChild(h4);
+        const preCourses = course.prerequisites.map(a => actualPensum.courses[a])
+        const ul = document.createElement("ul");
+        preCourses.forEach((pre) => {
+            const li = document.createElement("li");
+            li.textContent = pre.name;
+            li.addEventListener("click", (e) => infoAction(pre.index));
+            // Click goto
+            ul.appendChild(li);
+        })
+        cont.appendChild(ul);
+    }
+
+    if (course.corequisites.length) {
+        const h4 = document.createElement("h4");
+        h4.textContent = "Corequisitos";
+        cont.appendChild(h4);
+        const coCourses = course.corequisites.map(a => actualPensum.courses[a])
+        const ul = document.createElement("ul");
+        coCourses.forEach((co) => {
+            const li = document.createElement("li");
+            li.textContent = co.name;
+            li.addEventListener("click", (e) => infoAction(co.index));
+            // Click goto
+            ul.appendChild(li);
+        })
+        cont.appendChild(ul);
+    }
+    // info.innerHTML = `
+    // <div class="cont">
+    // <div class="close" onclick="this.parentElement.remove()">
+    // </div>
+    //     <h3>${course.name}</h3>
+    //     <p>${course.code}</p>
+    //     <p>${course.description}</p>
+    //     <p>Créditos: ${course.credits}</p>
+    //     <p>Horas: ${course.hours[0]} teoría, ${course.hours[1]} práctica, ${
+    //     course.hours[2]
+    // } laboratorio</p>
+    //     <p>Requisitos: ${course.prerequisites.join(", ")}</p>
+    //     <p>Corequisitos: ${course.corequisites.join(", ")}</p>
+    // } semestre</p>
+    //  </div>
+    // `;
+    info.appendChild(cont);
+    document.body.appendChild(info);
+};
+
+// Mode change
+
+const modeChange = (mode) => {
+    actualPensum.selectionMode = mode;
+    const aside = document.querySelector("aside");
+
+    // Clear Selection Mode
+    actualPensum.element.classList.remove("selection");
+    if (actualPensum.elementSelected.length)
+        actualPensum.elementSelected[0].classList.remove("selected");
+    actualPensum.elementSelected = [];
+
+    if (mode == 1) actualPensum.element.classList.add("path");
+    else actualPensum.element.classList.remove("path");
+
+    // Clear Canvas
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    asideUpdate(aside);
+};
+
+const modeToggle = (mode1, mode2) => {
+    modeChange(actualPensum.selectionMode == mode1 ? mode2 : mode1);
 };
 
 // Canvas Arrow

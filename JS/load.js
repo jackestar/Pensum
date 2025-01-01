@@ -1,7 +1,15 @@
 const historyNav = () => {
     document.querySelectorAll("[data-url]").forEach((button) => {
         button.addEventListener("click", async (e) => {
+            // console.log("create and destroy")
             const url = button.getAttribute("data-url");
+
+            // ?back
+            if (url.includes("?back")) {
+                main.classList.remove("show");
+                history.pushState({}, "", url.replace("?back", ""));
+                return;
+            }
 
             history.pushState({}, "", url);
 
@@ -15,12 +23,16 @@ const historyNav = () => {
                 const doc = parser.parseFromString(newContent, "text/html");
 
                 // Update the content
-                await aviableList(doc);
+                await availableList(doc);
 
                 // Replace the content
                 document.title = doc.title;
-                document.querySelector("main").innerHTML =
+                const main = document.querySelector("main");
+                main.innerHTML =
                     doc.querySelector("main").innerHTML;
+                // if (!button.classList.contains("back")) {
+                    main.classList.add("show");
+                // } else main.classList.remove("show");
 
                 historyNav();
             } else {
@@ -33,7 +45,7 @@ const historyNav = () => {
 const scriptUpdate = () => {
     // Script update
     historyNav();
-    aviableList();
+    availableList();
 };
 
 // Handle back/forward navigation
@@ -49,7 +61,7 @@ window.addEventListener("popstate", async (e) => {
         const doc = parser.parseFromString(newContent, "text/html");
 
         // Update the content
-        await aviableList(doc);
+        await availableList(doc);
 
         // Replace the content
         document.title = doc.title;
@@ -62,52 +74,42 @@ window.addEventListener("popstate", async (e) => {
     }
 });
 
-const aviableList = async (doc = document) => {
-    const aviable = doc.querySelector(".aviable");
-    if (!aviable) return;
+const availableList = async (doc = document) => {
+    const available = doc.querySelector(".available");
+    if (!available) return;
 
-    aviable.innerHTML = "";
+    available.innerHTML = "";
 
     const h2 = document.createElement("h2");
     h2.textContent = "Pensum disponibles";
 
-    aviable.appendChild(h2);
+    available.appendChild(h2);
 
     const dir = "/pensums/";
     const list = await importJSON(dir + "list.json");
 
     list["listado"].forEach((item) => {
         const element = addListElement(item, "/icons/article.svg", "#" + item);
-        aviable.appendChild(element);
+        available.appendChild(element);
         element.addEventListener("click", async e => {
+            const list = await filterJSON(await importJSON(dir + item + ".json"));
+            drawPensumTable(list);
 
-            main = document.querySelector("main");
-            const list = await importJSON(dir + item + ".json");
+            actualPensum.linkName = item;
 
-            const article = document.querySelector("article.pensum");
-            if (article) article.remove();
-            
-            let pensumTable = createPensumTable(list)
-            actualPensum.element = pensumTable;
-
-            main.style.display = "none";
-            document.body.appendChild(pensumTable);
-            actualPensum.em = parseInt(window.getComputedStyle(document.querySelector("article.pensum ul")).padding.slice(0,-2));
-
-            actualPensum.courses.forEach(course => {
-                const posElem = course.element;
-                posElem.top = [posElem.offsetLeft + posElem.offsetWidth/2, posElem.offsetTop];
-                posElem.bottom = [posElem.offsetLeft + posElem.offsetWidth/2, posElem.offsetTop + posElem.offsetHeight];
-                posElem.right = [posElem.offsetLeft + posElem.offsetWidth, posElem.offsetTop + posElem.offsetHeight/2];
-                posElem.left = [posElem.offsetLeft, posElem.offsetTop + posElem.offsetHeight/2];
-            })
-            initCanvas();
+            drawAside();
         });
     });
 
+    if (actualPensum.linkName) {
+        const elementBack = addListElement(`Volver (${actualPensum.linkName})`, "/icons/arrow_back.svg","#"+actualPensum.linkName+"?back");
+        elementBack.classList.add("back");
+        available.appendChild(elementBack);
+    }
+
     const hash = window.location.hash;
     if (hash) {
-        const element = aviable.querySelector(`[data-url="${hash}"]`);
+        const element = available.querySelector(`[data-url="${hash}"]`);
         if (element) element.click();
     }
 };
