@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml" />
         <link rel="stylesheet" href="./styles/stylesP.css" />
-        <link rel="prefetch" href="./index.html" as="document"/>
-        <link rel="prefetch" href="./view.html" as="document"/>
+        <link rel="prefetch" href="./create.html" as="document" />
+        <link rel="prefetch" href="./index.html" as="document" />
         <title>Create/Edit | Pensum Generator</title>
         <style>
             main {
@@ -18,7 +18,11 @@
         <main>
             <div class="main">
                 <nav>
-                    <img data-url="./index.html" src="./icons/arrow_back.svg" alt="back"/>
+                    <img
+                        data-url="./index.html"
+                        src="./icons/arrow_back.svg"
+                        alt="back"
+                    />
                 </nav>
                 <section class="logo">
                     <h1>Pensum Generator</h1>
@@ -32,7 +36,7 @@
                 <section class="footer">
                     <p>
                         Desarrollado por
-                        <a href="https://github.com/jackestar">Jackestar</a> 2024
+                        <a href="https://github.com/jackestar">Jackestar</a> 2025
                     </p>
                 </section>
             </div>
@@ -41,13 +45,11 @@
         <script src="./JS/pensum.js"></script>
         <script src="./JS/load.js"></script>
         <script>
-
-        document.addEventListener('DOMContentLoaded', ()=> {
-            const main = document.querySelector('main');
-            main.classList.add('show');
-            scriptUpdate();
-            })
-        
+            document.addEventListener("DOMContentLoaded", () => {
+                const main = document.querySelector("main");
+                main.classList.add("show");
+                scriptUpdate();
+            });
         </script>
     </body>
 </html>

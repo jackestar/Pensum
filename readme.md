@@ -4,6 +4,8 @@
 <div align="center">
 <img src="./favicon.svg" width="96">
 
+Super lightweight Pensum generator/organizer/visualizer made from scratch
+
 </div>
 
 <!-- ![Logo](./favicon.svg) -->

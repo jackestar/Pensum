@@ -126,7 +126,6 @@ body {
 
 main {
     background: var(--background-70);
-    /* color: var(--foreground); */
     display: none;
     flex-direction: column;
     justify-content: center;
@@ -134,9 +133,6 @@ main {
     height: 100%;
     width: 100%;
     left:0;
-    /* overflow-y: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none; */
     position:fixed;
     z-index: 1010;
 }
@@ -155,6 +151,7 @@ main div.main {
     overflow-y: scroll;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    height: 100%;
 }
 
 body main.show {
@@ -225,8 +222,9 @@ section.interact div>*:hover {
 }
 
 section.interact div:not(.doc) div {
-    background: var(--colorA-30);
+    background: var(--neutral-30);
     color: var(--colorA-90);
+    user-select: none;
 }
 
 section.interact div:not(.doc) div:hover {
@@ -276,13 +274,27 @@ section div.available-item {
     cursor: pointer;
 }
 
-/* Nav */
-main nav {
-    /* width: 100cqw; */
+section div.available-item.back {
+    order: -1;
 }
 
-main nav img {
+section div.available h2{
+    order:-2;
+}
+
+/* Nav */
+
+nav {
+    width: 100%;
+}
+
+div.infoBanner nav img {
+    padding:0;
+}
+
+nav img {
     padding: 1em;
+    cursor: pointer;
     /* justify-self: center; */
 }
 
@@ -292,14 +304,14 @@ article.pensum {
     min-height: 100vh;
 }
 
-article.pensum ul.semester {
+article.pensum ul.term {
     display: flex;
     flex-direction: column;
     list-style-type: none;
     padding: 1em;
 }
 
-article.pensum ul.semester li {
+article.pensum ul.term li {
     min-width: 13em;
     min-height: 4em;
     cursor: pointer;
@@ -314,52 +326,52 @@ article.pensum ul.semester li {
     justify-content: center;
 }
 
-article.pensum ul.semester li {
+article.pensum ul.term li {
     background: var(--neutral-90);
     color: var(--neutral-10);
     position:relative;
     border:.2em solid transparent;
 }
 
-article.pensum ul.semester li:first-of-type {
+article.pensum ul.term li.term {
     background: var(--colorA-50);
     color: var(--neutral-10);
     min-height: 2em;
 }
 
-article.pensum ul.semester li:first-of-type p {
+article.pensum ul.term li.term p {
     font-size: 1.25em;
     font-weight: bold;
     width: 100%;
     text-wrap: nowrap;
 }
 
-article.pensum ul.semester li:first-of-type:hover {
+article.pensum ul.term li.term:hover {
     background: var(--colorA-60);
 }
 
 /* Element Status */
 
-article.pensum ul.semester li.corequired {
+article.pensum ul.term li.corequired {
     border:.2em solid var(--colorA-50);
 }
 
-article.pensum ul.semester li.unavailable {
+article.pensum ul.term li.unavailable {
     background: var(--neutral-50);
     cursor:default;
 }
 
-article.pensum ul.semester li.unavailable:hover {
+article.pensum ul.term li.unavailable:hover {
     background: var(--neutral-60);
 }
 
-article.pensum ul.semester li.available-next {
+article.pensum.path ul.term li.available-next {
     background: var(--colorD-60);
 }
 
 /* Badge */
 
-article.pensum ul.semester li div.badge {
+article.pensum ul.term li div.badge {
     display: none;
     justify-content: right;
     font-size: .75em;
@@ -368,19 +380,19 @@ article.pensum ul.semester li div.badge {
     bottom: -1em;
     right: -1em;
 }
-article.pensum.selection ul.semester li.selected div.badge {
+article.pensum.selection ul.term li.selected div.badge {
     display: flex;
 }
 
-article.pensum.selection ul.semester li.sel-act:hover div.badge {
+article.pensum.selection ul.term li.sel-act:hover div.badge {
     display: flex;
 }
 
-article.pensum:not(.selection) ul.semester li:hover div.badge {
+article.pensum:not(.selection) ul.term li:hover div.badge {
     display: flex;
 }
 
-article.pensum ul.semester li div.badge div.info {
+article.pensum ul.term li div.badge div.info {
     display: flex;
     padding: .25em;
     margin: .25em;
@@ -392,37 +404,37 @@ article.pensum ul.semester li div.badge div.info {
 /* Star Mode */
 
 
-article.pensum.selection ul.semester li {
+article.pensum.selection ul.term li {
     opacity: .2;
 }
 
-article.pensum.selection ul.semester li.selected {
+article.pensum.selection ul.term li.selected {
     opacity: 1;
     background: var(--neutral-90);
 }
 
-article.pensum.selection ul.semester li.sel-act {
+article.pensum.selection ul.term li.sel-act {
     background: var(--neutral-80);
     opacity:1;
 }
 
-article.pensum.selection ul.semester li.sel-act.coreq:hover {
+article.pensum.selection ul.term li.sel-act.coreq:hover {
     background:var(--colorE-70)
 }
-article.pensum.selection ul.semester li.sel-act.prereq:hover {
+article.pensum.selection ul.term li.sel-act.prereq:hover {
     background:var(--colorD-70)
 }
-article.pensum.selection ul.semester li.sel-act.required:hover {
+article.pensum.selection ul.term li.sel-act.required:hover {
     background:var(--colorA-80)
 }
 
-article.pensum.selection ul.semester li:first-child {
+article.pensum.selection ul.term li:first-child {
     opacity: 1;
 }
 
 /* Path Mode */
 
-article.pensum.path ul.semester li.passed {
+article.pensum.path ul.term li.passed {
     background: var(--colorF-50);
 }
 
@@ -495,7 +507,7 @@ body>div.infoBanner {
     z-index: 1003;
 }
 
-body>div.infoBanner div {
+body>div.infoBanner>div {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -510,6 +522,7 @@ body>div.infoBanner div {
 }
 
 body>div.infoBanner h3 {
+    font-size: 2em;
     margin: .5em .5em .0em .5em;
 }
 
@@ -534,6 +547,8 @@ body>div.infoBanner ul li {
     cursor: pointer;
     transition:.1s ease-out;
     display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 body>div.infoBanner ul li:hover {
@@ -542,4 +557,32 @@ body>div.infoBanner ul li:hover {
 
 body>div.infoBanner h4 {
     margin-top: 1em;
+}
+
+body>div.infoBanner div.hours {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 1em;
+    border-radius: 1em;
+    font-variant: all-small-caps;
+    margin-top: 1em;
+}
+
+body>div.infoBanner div.hours>img {
+    margin-left: .5em;
+    cursor:pointer
+}
+
+body>div.infoBanner div.hours div.extendInfo {
+    flex:1 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+body>div.infoBanner div.hours div.extendInfo.show {
+    display: flex;
 }

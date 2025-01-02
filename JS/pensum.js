@@ -7,12 +7,12 @@ let courseFormat = {
     code: "",
     name: "",
     credits: 0,
-    semester: 0,
+    term: 0,
     description: "",
     hours: [0, 0, 0], // theory, practice, lab
     prerequisites: [], // code - prerequisites
     corequisites: [], // code - Other parallel courses
-    careerRequirement: [0, 0], // credits, semester
+    careerRequirement: [0, 0], // credits, term
     addPrerequisite: (prerequisite) => {
         this.prerequisites.push(prerequisite);
     },
@@ -25,7 +25,8 @@ let PensumFormat = {
     career: "",
     faculty: "",
     description: "",
-    semesters: 0,
+    terms: 0,
+    termName: ["",""], // singular, plural
     formatVersion: FormatVersion,
     courses: [],
     addCourse: (course) => {
@@ -73,13 +74,13 @@ const filterJSON = async (
     pensum.elementSelected = [];
     pensum.element = [];
 
-    pensum.coursesBySemester = Array.from(
-        { length: pensum.semesters },
+    pensum.coursesByterm = Array.from(
+        { length: pensum.terms },
         () => []
     );
 
     pensum.courses = pensum.courses.map((course, index) => {
-        let sem = course.semester - 1;
+        let sem = course.term - 1;
         course.index = index;
         course.passes = false;
         course.required = course.required ? course.required : [];
@@ -96,7 +97,6 @@ const filterJSON = async (
                         : co.index;
                 course.corequisites[index] = co.index;
                 co.corequired = true;
-                // pensum.courses[co.index] = co;
             });
         }
         if (course.prerequisites.length) {
@@ -106,10 +106,9 @@ const filterJSON = async (
                     ? pr.required.push(course.index)
                     : (pr.required = [course.index]);
                 course.prerequisites[index] = pr.index;
-                // pensum.courses[pr.index] = pr;
             });
         }
-        pensum.coursesBySemester[sem].push(course);
+        pensum.coursesByterm[sem].push(course);
 
         filtered = course;
         pensum.totalCredits += course.credits;
@@ -138,27 +137,33 @@ const addListElement = (name, icon, url) => {
 
     div.appendChild(img);
     div.appendChild(h3);
-    // div.addEventListener("click", (e) => history.pushState({}, "", url));
+    div.addEventListener("click", (e) => history.pushState({}, "", url));
     return div;
 };
 
 const createPensumTable = (pensum) => {
     actualPensum = pensum;
-    semesters = pensum.semesters;
+    terms = pensum.terms;
 
     const article = document.createElement("article");
     article.classList.add("pensum");
-    for (let semester = 0; semester < semesters; semester++) {
+    for (let term = 0; term < terms; term++) {
         const ul = document.createElement("ul");
-        ul.classList.add("semester");
+        ul.classList.add("term");
         const li = document.createElement("li");
+        li.classList.add("term");
+        li.addEventListener("click", e => {
+            actualPensum.coursesByterm[term].forEach((course) => {
+                if (actualPensum.selectionMode == 1) elementAction(course.element, course.index)
+            });
+        });
         const p = document.createElement("p");
-        p.textContent = `Semestre ${semester + 1}`;
+        p.textContent = `${actualPensum.termName[0]} ${term + 1}`;
 
         li.appendChild(p);
         ul.appendChild(li);
 
-        actualPensum.coursesBySemester[semester].forEach((course) => {
+        actualPensum.coursesByterm[term].forEach((course) => {
             const li = document.createElement("li");
             li.addEventListener("click", (e) => {
                 actualPensum.elementSelected = elementAction(li, course.index);
@@ -400,7 +405,6 @@ const elementAction = (element, index) => {
                     updateCourse(reCourse.element, reCourse.index);
                 }
             });
-            // element.classList.toggle("passed");
         }
     }
 
@@ -409,16 +413,25 @@ const elementAction = (element, index) => {
 };
 
 const infoAction = (index) => {
-
     const infoOld = document.querySelector(".infoBanner");
     if (infoOld) infoOld.remove();
-    // window.scrollTo(0, 0);
+
+
     const course = actualPensum.courses[index];
     const info = document.createElement("div");
     info.classList.add("infoBanner");
-    info.addEventListener("click", (e) => e.target == info?info.remove():null);
+    info.addEventListener("click", (e) =>
+        e.target == info ? info.remove() : null
+    );
 
     const cont = document.createElement("div");
+
+    const nav = document.createElement("nav");
+    const img = document.createElement("img");
+    img.src = "/icons/arrow_back.svg";
+    img.addEventListener("click", e => info.remove() );
+    nav.appendChild(img);
+    cont.appendChild(nav);
 
     const name = document.createElement("h3");
     name.textContent = course.name;
@@ -445,24 +458,61 @@ const infoAction = (index) => {
     }
 
     if (course.hours) {
+        const div = document.createElement("div");
+        div.classList.add("hours");
+        const img = document.createElement("img");
+        img.src = "/icons/info.svg";
+        img.addEventListener("click", e => {extendInfo.classList.toggle("show")});
+
         const hours = document.createElement("p");
-        hours.textContent = `Horas: ${course.hours.reduce((i, act) => i + act, 0)}`;
-        cont.appendChild(hours);
+        hours.textContent = `Horas: ${course.hours.reduce(
+            (i, act) => i + act,
+            0
+        )}`;
+
+        const extendInfo = document.createElement("div");
+        extendInfo.classList.add("extendInfo");
+        const ul = document.createElement("ul");
+        [
+            ["Teoría", "/icons/book.svg"],
+            ["Práctica", "/icons/draw.svg"],
+            ["Laboratorio", "/icons/experiment.svg"],
+        ].forEach((hour, index) => {
+            const li = document.createElement("li");
+            if (course.hours[index]) {
+                const img = document.createElement("img");
+                img.src = hour[1];
+                const p = document.createElement("p");
+                p.textContent = `${hour[0]}: ${course.hours[index]}`;
+
+                li.appendChild(img);
+                li.appendChild(p);
+                ul.appendChild(li);
+            }
+        });
+
+        extendInfo.appendChild(ul);
+
+        div.appendChild(hours);
+        div.appendChild(img);
+        div.appendChild(extendInfo);
+        cont.appendChild(div);
     }
 
     if (course.prerequisites.length) {
         const h4 = document.createElement("h4");
         h4.textContent = "Requisitos";
         cont.appendChild(h4);
-        const preCourses = course.prerequisites.map(a => actualPensum.courses[a])
+        const preCourses = course.prerequisites.map(
+            (a) => actualPensum.courses[a]
+        );
         const ul = document.createElement("ul");
         preCourses.forEach((pre) => {
             const li = document.createElement("li");
             li.textContent = pre.name;
             li.addEventListener("click", (e) => infoAction(pre.index));
-            // Click goto
             ul.appendChild(li);
-        })
+        });
         cont.appendChild(ul);
     }
 
@@ -470,33 +520,18 @@ const infoAction = (index) => {
         const h4 = document.createElement("h4");
         h4.textContent = "Corequisitos";
         cont.appendChild(h4);
-        const coCourses = course.corequisites.map(a => actualPensum.courses[a])
+        const coCourses = course.corequisites.map(
+            (a) => actualPensum.courses[a]
+        );
         const ul = document.createElement("ul");
         coCourses.forEach((co) => {
             const li = document.createElement("li");
             li.textContent = co.name;
             li.addEventListener("click", (e) => infoAction(co.index));
-            // Click goto
             ul.appendChild(li);
-        })
+        });
         cont.appendChild(ul);
     }
-    // info.innerHTML = `
-    // <div class="cont">
-    // <div class="close" onclick="this.parentElement.remove()">
-    // </div>
-    //     <h3>${course.name}</h3>
-    //     <p>${course.code}</p>
-    //     <p>${course.description}</p>
-    //     <p>Créditos: ${course.credits}</p>
-    //     <p>Horas: ${course.hours[0]} teoría, ${course.hours[1]} práctica, ${
-    //     course.hours[2]
-    // } laboratorio</p>
-    //     <p>Requisitos: ${course.prerequisites.join(", ")}</p>
-    //     <p>Corequisitos: ${course.corequisites.join(", ")}</p>
-    // } semestre</p>
-    //  </div>
-    // `;
     info.appendChild(cont);
     document.body.appendChild(info);
 };
