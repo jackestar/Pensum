@@ -26,7 +26,7 @@ let PensumFormat = {
     faculty: "",
     description: "",
     terms: 0,
-    termName: ["",""], // singular, plural
+    termName: ["", ""], // singular, plural
     formatVersion: FormatVersion,
     courses: [],
     addCourse: (course) => {
@@ -37,8 +37,9 @@ let PensumFormat = {
 let actualPensum = Object.create(PensumFormat);
 // Selection Mode
 // 0 - Star
-
-// Importar/Exportar
+// 1 - Path
+// 2 - View
+// 3 - Edit
 
 // Import JSON
 
@@ -74,10 +75,7 @@ const filterJSON = async (
     pensum.elementSelected = [];
     pensum.element = [];
 
-    pensum.coursesByterm = Array.from(
-        { length: pensum.terms },
-        () => []
-    );
+    pensum.coursesByterm = Array.from({ length: pensum.terms }, () => []);
 
     pensum.courses = pensum.courses.map((course, index) => {
         let sem = course.term - 1;
@@ -107,6 +105,10 @@ const filterJSON = async (
                     : (pr.required = [course.index]);
                 course.prerequisites[index] = pr.index;
             });
+        }
+        if (course.careerRequirement) {
+            if (course.careerRequirement[0]) course.available = false;
+            if (course.careerRequirement[1]) course.available = false;
         }
         pensum.coursesByterm[sem].push(course);
 
@@ -152,9 +154,10 @@ const createPensumTable = (pensum) => {
         ul.classList.add("term");
         const li = document.createElement("li");
         li.classList.add("term");
-        li.addEventListener("click", e => {
+        li.addEventListener("click", (e) => {
             actualPensum.coursesByterm[term].forEach((course) => {
-                if (actualPensum.selectionMode == 1) elementAction(course.element, course.index)
+                if (actualPensum.selectionMode == 1)
+                    elementAction(course.element, course.index);
             });
         });
         const p = document.createElement("p");
@@ -416,7 +419,6 @@ const infoAction = (index) => {
     const infoOld = document.querySelector(".infoBanner");
     if (infoOld) infoOld.remove();
 
-
     const course = actualPensum.courses[index];
     const info = document.createElement("div");
     info.classList.add("infoBanner");
@@ -429,7 +431,7 @@ const infoAction = (index) => {
     const nav = document.createElement("nav");
     const img = document.createElement("img");
     img.src = "/icons/arrow_back.svg";
-    img.addEventListener("click", e => info.remove() );
+    img.addEventListener("click", (e) => info.remove());
     nav.appendChild(img);
     cont.appendChild(nav);
 
@@ -462,7 +464,9 @@ const infoAction = (index) => {
         div.classList.add("hours");
         const img = document.createElement("img");
         img.src = "/icons/info.svg";
-        img.addEventListener("click", e => {extendInfo.classList.toggle("show")});
+        img.addEventListener("click", (e) => {
+            extendInfo.classList.toggle("show");
+        });
 
         const hours = document.createElement("p");
         hours.textContent = `Horas: ${course.hours.reduce(
@@ -499,10 +503,25 @@ const infoAction = (index) => {
         cont.appendChild(div);
     }
 
-    if (course.prerequisites.length) {
+    if (course.prerequisites.length || course.careerRequirement) {
         const h4 = document.createElement("h4");
         h4.textContent = "Requisitos";
         cont.appendChild(h4);
+        if (course.careerRequirement) {
+            const ul = document.createElement("ul");
+            // h4.textContent = "Requisitos de Carrera";
+            if (course.careerRequirement[0]) {
+                const li = document.createElement("li");
+                li.textContent = `${course.careerRequirement[0]} Créditos`;
+                ul.appendChild(li);
+            }
+            if (course.careerRequirement[1]) {
+                const li = document.createElement("li");
+                li.textContent = `${course.careerRequirement[1]} ${actualPensum.termName[0]}`;
+                ul.appendChild(li);
+            }
+            cont.appendChild(ul);
+        }
         const preCourses = course.prerequisites.map(
             (a) => actualPensum.courses[a]
         );

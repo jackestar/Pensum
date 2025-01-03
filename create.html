@@ -24,19 +24,95 @@
                         alt="back"
                     />
                 </nav>
-                <section class="logo">
-                    <h1>Pensum Generator</h1>
-                    <div class="logo">
-                        <img src="./favicon.svg" alt="Logo" />
-                    </div>
-                </section>
-                <section class="interact">
-                    <h3>Edit</h3>
+                <section class="create">
+                    <form>
+                        <h2>Crear Nuevo Pensum</h2>
+                        <div class="form">
+                            <label for="career">Nombre</label>
+                            <input
+                                type="text"
+                                name="career"
+                                id="career"
+                                placeholder="Nombre del Pensum"
+                            />
+                        </div>
+                        <div class="form">
+                            <label for="faculty">Facultad</label>
+                            <input
+                                type="text"
+                                name="faculty"
+                                id="faculty"
+                                placeholder="Código del Pensum"
+                            />
+                        </div>
+                        <div class="form custom">
+                            <label for="termName">Termino</label>
+                            <select id="termName" name="termName">
+                                <option value="Semestre,semestres">
+                                    Semestre
+                                </option>
+                                <option value="Cuatrimestre,cuatrimestres">
+                                    Cuatrimestre
+                                </option>
+                                <option value="Trimestre,trimestres">
+                                    Trimestre
+                                </option>
+                                <option value="Término,Términos">
+                                    Termino
+                                </option>
+                                <option value="Corte,Cortes">Corte</option>
+                                <option value="Lapso,Lapsos">Lapso</option>
+                                <option value="custom">Personalizado...</option>
+                            </select>
+                            <div class="new">
+                                <h4>Nombre del Termino</h4>
+                                <input
+                                    type="text"
+                                    name="termName0"
+                                    id="termName0"
+                                    placeholder="Singular"
+                                />
+                                <input
+                                    type="text"
+                                    name="termName1"
+                                    id="termName1"
+                                    placeholder="Plural"
+                                />
+                            </div>
+                        </div>
+                        <div class="form">
+                            <label for="semester">Semestres</label>
+                            <input
+                                type="number"
+                                name="semester"
+                                id="semester"
+                                placeholder="Semestres del Pensum"
+                            />
+                        </div>
+                        <div class="form">
+                            <label for="description">Descripción</label>
+                            <textarea
+                                name="description"
+                                id="description"
+                                placeholder="Descripción del Pensum"
+                            ></textarea>
+                        </div>
+                        <div class="form submit">
+                            <button id="clear" type="reset">
+                                <label for="clear">Limpiar</label>
+                            </button>
+                            <button id="create">
+                                <img src="./icons/new_window.svg" />
+                                <label for="create">Crear</label>
+                            </button>
+                        </div>
+                    </form>
                 </section>
                 <section class="footer">
                     <p>
                         Desarrollado por
-                        <a href="https://github.com/jackestar">Jackestar</a> 2025
+                        <a href="https://github.com/jackestar">Jackestar</a>
+                        2025
                     </p>
                 </section>
             </div>
