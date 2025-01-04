@@ -1,35 +1,41 @@
 <aside>
     <div>
         <ul>
-            <h3>Mode</h3>
-            <li data-url="/view.html">
-                <img src="/icons/arrow_back.svg" alt="Volver" />
+            <!-- <h3>Mode</h3> -->
+            <li class="back">
+                <img src="/icons/arrow_back.svg" title="Volver" />
             </li>
-            <li><img src="/icons/add.svg" alt="Añadir Record" /></li>
+            <li><img src="/icons/file_open.svg" title="Añadir Record" /></li>
+            <!-- <li><img src="/icons/gesture_select.svg" title="Disponible"></li> -->
+            <!-- <li><img src="/icons/visibility.svg" title="Lectura"></li> -->
+        </ul>
+        <ul class="view">
             <li onclick="modeToggle(1,0)" class="path">
-                <img src="/icons/ink_selection.svg" alt="Selección" />
+                <img src="/icons/ink_selection.svg" title="Selección" />
             </li>
-            <!-- <li><img src="/icons/gesture_select.svg" alt="Disponible"></li> -->
-            <!-- <li><img src="/icons/visibility.svg" alt="Lectura"></li> -->
+            <li><img src="" title="" /></li>
+            <li><img src="" title="" /></li>
         </ul>
-        <ul>
-            <li><img src="" alt="" /></li>
-            <li><img src="" alt="" /></li>
-            <li><img src="" alt="" /></li>
-        </ul>
-        <ul>
-            <li><img src="" alt="" /></li>
-            <li><img src="" alt="" /></li>
-            <li><img src="" alt="" /></li>
+        <ul class="edit">
+            <li>
+                <img src="/icons/edit_square.svg" title="Editar Descripción" />
+            </li>
+            <li class="addCourse">
+                <img src="/icons/splitscreen_add.svg" title="Añadir Curso" />
+            </li>
+            <li class="addTerm">
+                <img src="/icons/splitscreen_vertical.svg" title="Añadir Termino" />
+            </li>
+            <li><img src="/icons/save.svg" title="Guardar" /></li>
         </ul>
     </div>
     <div>
         <ul>
-            <li><img src="/icons/light_mode.svg" alt="Modo Claro" /></li>
-            <li><img src="/icons/quick_reference.svg" alt="Guía Rápida" /></li>
+            <li><img src="/icons/light_mode.svg" title="Modo Claro" /></li>
+            <li><img src="/icons/quick_reference.svg" title="Guía Rápida" /></li>
             <li>
                 <a href="https://jackestar.netlify.app/Blog/">
-                    <img src="/icons/help.svg" alt="Documentación" />
+                    <img src="/icons/help.svg" title="Documentación" />
                 </a>
             </li>
         </ul>

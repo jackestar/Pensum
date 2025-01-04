@@ -29,8 +29,34 @@ let PensumFormat = {
     termName: ["", ""], // singular, plural
     formatVersion: FormatVersion,
     courses: [],
-    addCourse: (course) => {
+    coursesByTerm: [],
+    addCourse: function (course) {
         this.courses.push(course);
+        this.coursesByTerm[course.term - 1].push(course);
+    },
+    removeCourse: function (index) {
+        const course = this.courses[index];
+        this.courses.splice(index, 1);
+        this.coursesByTerm[course.term - 1].splice(
+            this.coursesByTerm[course.term - 1].indexOf(course),
+            1
+        );
+    },
+    addTerm: function () {
+        this.terms++;
+        this.coursesByTerm.push([]);
+    },
+    removeTerm: function (term = this.terms) {
+        if (term > 0 && term <= this.terms && this.terms > 1) {
+            this.coursesByTerm[term - 1].forEach((course) => {
+                const index = this.courses.indexOf(course);
+                if (index > -1) {
+                    this.courses.splice(index, 1);
+                }
+            });
+            this.coursesByTerm.splice(term - 1, 1);
+            this.terms--;
+        }
     },
 };
 
@@ -72,10 +98,10 @@ const filterJSON = async (
 
     pensum.totalCredits = 0;
     pensum.selectionMode = 0;
-    pensum.elementSelected = [];
-    pensum.element = [];
+    pensum.elementSelected = {};
+    pensum.element = {};
 
-    pensum.coursesByterm = Array.from({ length: pensum.terms }, () => []);
+    pensum.coursesByTerm = Array.from({ length: pensum.terms }, () => []);
 
     pensum.courses = pensum.courses.map((course, index) => {
         let sem = course.term - 1;
@@ -110,7 +136,7 @@ const filterJSON = async (
             if (course.careerRequirement[0]) course.available = false;
             if (course.careerRequirement[1]) course.available = false;
         }
-        pensum.coursesByterm[sem].push(course);
+        pensum.coursesByTerm[sem].push(course);
 
         filtered = course;
         pensum.totalCredits += course.credits;
@@ -155,18 +181,38 @@ const createPensumTable = (pensum) => {
         const li = document.createElement("li");
         li.classList.add("term");
         li.addEventListener("click", (e) => {
-            actualPensum.coursesByterm[term].forEach((course) => {
-                if (actualPensum.selectionMode == 1)
-                    elementAction(course.element, course.index);
-            });
+            if (actualPensum.coursesByTerm[term])
+                actualPensum.coursesByTerm[term].forEach((course) => {
+                    if (actualPensum.selectionMode == 1)
+                        elementAction(course.element, course.index);
+                });
         });
         const p = document.createElement("p");
         p.textContent = `${actualPensum.termName[0]} ${term + 1}`;
 
+        if (actualPensum.selectionMode == 3) {
+            const badges = document.createElement("div");
+            badges.classList.add("badge");
+
+            const del = document.createElement("div");
+            del.classList.add("del");
+            const delIcon = document.createElement("img");
+            delIcon.src = "/icons/delete.svg";
+            del.addEventListener("click", (e) => {
+                actualPensum.removeTerm(term + 1);
+                drawPensumTable(actualPensum);
+            });
+            del.appendChild(delIcon);
+
+            badges.appendChild(del);
+
+            li.appendChild(badges);
+        }
+
         li.appendChild(p);
         ul.appendChild(li);
 
-        actualPensum.coursesByterm[term].forEach((course) => {
+        actualPensum.coursesByTerm[term].forEach((course) => {
             const li = document.createElement("li");
             li.addEventListener("click", (e) => {
                 actualPensum.elementSelected = elementAction(li, course.index);
@@ -181,23 +227,73 @@ const createPensumTable = (pensum) => {
             const badges = document.createElement("div");
             badges.classList.add("badge");
 
-            const info = document.createElement("div");
-            info.classList.add("info");
-            const infoIcon = document.createElement("img");
-            infoIcon.src = "/icons/info.svg";
-            info.addEventListener("click", (e) => infoAction(course.index));
-            info.appendChild(infoIcon);
+            if (actualPensum.selectionMode == 3) {
+                const edit = document.createElement("div");
+                edit.classList.add("edit");
+                const editIcon = document.createElement("img");
+                editIcon.src = "/icons/edit_square.svg";
+                // edit.addEventListener("click", (e) => editAction(course.index));
+                edit.appendChild(editIcon);
 
-            badges.appendChild(info);
+                const del = document.createElement("div");
+                del.classList.add("del");
+                const delIcon = document.createElement("img");
+                delIcon.src = "/icons/delete.svg";
+                del.addEventListener("click", (e) => {
+                    actualPensum.removeCourse(course.index);
+                    drawPensumTable(actualPensum);
+                });
+                del.appendChild(delIcon);
+
+                badges.appendChild(del);
+                badges.appendChild(edit);
+            } else {
+                const info = document.createElement("div");
+                info.classList.add("info");
+                const infoIcon = document.createElement("img");
+                infoIcon.src = "/icons/info.svg";
+                info.addEventListener("click", (e) => infoAction(course.index));
+                info.appendChild(infoIcon);
+
+                badges.appendChild(info);
+            }
 
             li.appendChild(h3);
             li.appendChild(p);
             li.appendChild(badges);
-            actualPensum.courses[course.index].element = li;
+            course.element = li;
+            // actualPensum.courses[course.index].element = li;
             ul.appendChild(li);
             updateCourse(li, course.index);
         });
+        if (actualPensum.selectionMode == 3) {
+            const li = document.createElement("li");
+            li.classList.add("add");
+            const img = document.createElement("img");
+            img.src = "/icons/add.svg";
+            li.appendChild(img);
 
+            li.addEventListener("click", (e) => addCourseAction(term + 1));
+            ul.appendChild(li);
+        }
+
+        article.appendChild(ul);
+    }
+    if (actualPensum.selectionMode == 3) {
+        const ul = document.createElement("ul");
+        ul.classList.add("term", "add");
+        const li = document.createElement("li");
+        li.classList.add("term");
+        const p = document.createElement("p");
+        p.textContent = `Añadir ${actualPensum.termName[0]}`;
+        li.appendChild(p);
+
+        li.addEventListener("click", (e) => {
+            actualPensum.addTerm();
+            drawPensumTable(actualPensum);
+        });
+
+        ul.appendChild(li);
         article.appendChild(ul);
     }
     return article;
@@ -238,12 +334,22 @@ const drawPensumTable = (list) => {
             posElem.offsetTop + posElem.offsetHeight / 2,
         ];
     });
-    initCanvas();
+    // initCanvas();
 };
 
-const drawAside = async () => {
+const drawAside = async (
+    back = "/index.html",
+    mode = actualPensum.selectionMode
+) => {
     const aside = document.querySelector("aside");
-    if (aside) return;
+    if (aside) {
+        if (aside.querySelector("li.back").getAttribute("data-url") == back) {
+            asideUpdate(aside); // Use the existing aside element
+            return;
+        } else {
+            aside.remove();
+        }
+    }
     const response = await fetch("/aside.html");
     if (response.ok) {
         const newContent = await response.text();
@@ -254,14 +360,35 @@ const drawAside = async () => {
             .parseFromString(newContent, "text/html")
             .querySelector("aside");
 
+        doc.querySelector("li.back").setAttribute("data-url", back);
+
+        // buttons
+
+        doc.querySelector(".addTerm").addEventListener("click", (e) => {
+            actualPensum.addTerm();
+            drawPensumTable(actualPensum);
+        });
+
+        doc.querySelector(".addCourse").addEventListener("click", (e) => {
+            addCourseAction();
+            drawPensumTable(actualPensum);
+        })
+
+        asideUpdate(doc);
+
         // Replace the content
         document.body.appendChild(doc);
 
-        asideUpdate(doc);
+        // remove old asides
+        // foced solution for now
+        document.querySelectorAll("aside").forEach((aside) => {
+            if (aside != doc) aside.remove();
+        });
     } else {
         console.error("Failed to load aside.");
     }
-    scriptUpdate();
+    historyNav();
+    // scriptUpdate();
 };
 
 let asideUpdate = (doc) => {
@@ -272,6 +399,12 @@ let asideUpdate = (doc) => {
         case 1:
             doc.classList = ["path"];
             break;
+        case 2:
+            doc.classList = ["view"];
+            break;
+        case 3:
+            doc.classList = ["edit"];
+            break;
         default:
             break;
     }
@@ -279,6 +412,8 @@ let asideUpdate = (doc) => {
 
 updateCourse = (element, index) => {
     const course = actualPensum.courses[index];
+    if (!course) return;
+
     if (course.available) {
         element.classList.remove("unavailable");
         if (course.corequired) element.classList.add("corequired");
@@ -295,8 +430,9 @@ updateCourse = (element, index) => {
 };
 
 const elementAction = (element, index) => {
-    let ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (actualPensum.courses[index] == undefined) return [];
+    let ctx = initCanvas();
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Overkill
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.strokeStyle = "#fff";
@@ -389,11 +525,9 @@ const elementAction = (element, index) => {
             course.passes = !course.passes;
             course.required.forEach((req) => {
                 const reCourse = actualPensum.courses[req];
-                // console.log(reCourse,reCourse.prerequisites)
                 let av = false;
                 if (reCourse.prerequisites)
                     av = reCourse.prerequisites.every((prereq) => {
-                        // console.log(prereq,actualPensum.courses[prereq].passes,actualPensum.courses[prereq])
                         if (!actualPensum.courses[prereq].passes) {
                             reCourse.passes = false;
                             return false;
@@ -421,7 +555,7 @@ const infoAction = (index) => {
 
     const course = actualPensum.courses[index];
     const info = document.createElement("div");
-    info.classList.add("infoBanner");
+    info.classList.add("infoBanner", "banner");
     info.addEventListener("click", (e) =>
         e.target == info ? info.remove() : null
     );
@@ -555,6 +689,204 @@ const infoAction = (index) => {
     document.body.appendChild(info);
 };
 
+const addCourseAction = (term = actualPensum.terms) => {
+    const Old = document.querySelector(".addBanner");
+    if (Old) infoOld.remove();
+    const addBanner = document.createElement("div");
+    addBanner.classList.add("addBanner", "banner");
+    addBanner.addEventListener("click", (e) =>
+        e.target == addBanner ? addBanner.remove() : null
+    );
+    const cont = document.createElement("div");
+    const form = document.createElement("form");
+    form.classList.add("courseForm");
+
+    const fields = [
+        {
+            label: "Código",
+            name: "code",
+            type: "text",
+            placeholder: "Código del Curso",
+        },
+        {
+            label: "Nombre",
+            name: "name",
+            type: "text",
+            placeholder: "Nombre del Curso",
+        },
+        {
+            label: "Créditos",
+            name: "credits",
+            type: "number",
+            placeholder: "Créditos del Curso",
+            value: 0,
+            min: 0,
+        },
+        {
+            label: "Termino",
+            name: "term",
+            type: "number",
+            placeholder: "Termino del Curso",
+            value: term,
+            min: 1,
+        },
+        {
+            label: "Descripción",
+            name: "description",
+            type: "textarea",
+            placeholder: "Descripción del Curso",
+        },
+        {
+            label: "Créditos Requeridos",
+            name: "careerRequirementCredits",
+            type: "number",
+            placeholder: "Créditos Requeridos",
+            value: 0,
+            min: 0,
+            subType: true
+        },
+        {
+            label: "Termino Requerido",
+            name: "careerRequirementTerm",
+            type: "number",
+            placeholder: "Termino Requerido",
+            value: 0,
+            min: 0,
+        },
+    ];
+    const hoursFilds = [
+        {
+            label: "Teoría",
+            name: "hoursTheory",
+            type: "number",
+            placeholder: "Horas de Teoría",
+            value: 0,
+            min: 0,
+        },
+        {
+            label: "Práctica",
+            name: "hoursPractice",
+            type: "number",
+            placeholder: "Horas de Práctica",
+            value: 0,
+            min: 0,
+            subType: true
+        },
+        {
+            label: "Laboratorio",
+            name: "hoursLab",
+            type: "number",
+            placeholder: "Horas de Laboratorio",
+            value: 0,
+            min: 0,
+            subType: true
+        },
+    ]
+
+    const appendField = (field) => {
+        const div = document.createElement("div");
+        div.classList.add("form");
+
+        const label = document.createElement("label");
+        label.setAttribute("for", field.name);
+        label.textContent = field.label;
+
+        let input;
+        if (field.type === "textarea") {
+            input = document.createElement("textarea");
+        } else {
+            input = document.createElement("input");
+            input.setAttribute("type", field.type);
+        }
+        input.setAttribute("name", field.name);
+        input.setAttribute("id", field.name);
+        input.setAttribute("placeholder", field.placeholder);
+        if (field.value != undefined) input.setAttribute("value", field.value);
+        if (field.min != undefined) input.setAttribute("min", field.min);
+
+        div.appendChild(label);
+        div.appendChild(input);
+        return div;
+    }
+
+    fields.forEach(field => {
+        form.appendChild(appendField(field));
+    });
+
+    const hoursDiv = document.createElement("div");
+    hoursDiv.classList.add("form", "hours");
+
+    const h4 = document.createElement("h4");
+    h4.textContent = "Horas";
+    hoursDiv.appendChild(h4);
+
+    hoursFilds.forEach(field => {
+        hoursDiv.appendChild(appendField(field));
+    })
+
+    form.appendChild(hoursDiv);
+
+    const submitDiv = document.createElement("div");
+    submitDiv.classList.add("form", "submit");
+
+    const submitButton = document.createElement("button");
+    submitButton.setAttribute("type", "submit");
+    submitButton.textContent = "Añadir Curso";
+    submitButton.id = "create";
+
+    submitDiv.appendChild(submitButton);
+    form.appendChild(submitDiv);
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const newCourse = Object.create(courseFormat);
+        const existingCourse = actualPensum.courses.find(
+            (course) => course.code === form.code.value
+        );
+
+        if (existingCourse || form.code.value == "") {
+            form.code.classList.add("needed");
+            form.code.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+        } else {
+            form.code.classList.remove("needed");
+        }
+        newCourse.code = form.code.value;
+        newCourse.name = form.name.value;
+        newCourse.credits = parseInt(form.credits.value);
+        newCourse.term = parseInt(form.term.value);
+        newCourse.description = form.description.value;
+        // newCourse.hours = [
+        //     parseInt(form.hoursTheory.value),
+        //     parseInt(form.hoursPractice.value),
+        //     parseInt(form.hoursLab.value),
+        // ];
+        // newCourse.prerequisites = form.prerequisites.value
+        //     .split(",")
+        //     .map((code) => code.trim());
+        // newCourse.corequisites = form.corequisites.value
+        //     .split(",")
+        //     .map((code) => code.trim());
+        newCourse.careerRequirement = [
+            parseInt(form.careerRequirementCredits.value),
+            parseInt(form.careerRequirementTerm.value),
+        ];
+
+        // calculate availability...
+        newCourse.available = false;
+
+        newCourse.index = actualPensum.courses.length;
+
+        actualPensum.addCourse(newCourse);
+        drawPensumTable(actualPensum);
+        addBanner.remove();
+    });
+
+    cont.appendChild(form);
+    addBanner.appendChild(cont);
+    document.body.appendChild(addBanner);
+};
+
 // Mode change
 
 const modeChange = (mode) => {
@@ -586,4 +918,5 @@ const canvas = document.querySelector("canvas.arrow");
 const initCanvas = () => {
     canvas.width = actualPensum.element.scrollWidth;
     canvas.height = actualPensum.element.scrollHeight;
+    return canvas.getContext("2d");
 };

@@ -137,7 +137,7 @@ main {
 }
 
 body:has(main.show),
-body:has(div.infoBanner) {
+body:has(div.banner) {
     overflow: hidden;
 }
 
@@ -321,10 +321,11 @@ article.pensum ul.term li {
     font-variant: all-small-caps;
     padding: 0.5em;
     border-radius: 0.5em;
-    text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    text-align: center;
+    align-items: center;
 }
 
 article.pensum ul.term li {
@@ -393,15 +394,25 @@ article.pensum:not(.selection) ul.term li:hover div.badge {
     display: flex;
 }
 
-article.pensum ul.term li div.badge div.info {
+article.pensum ul.term li div.badge div {
     display: flex;
     padding: 0.25em;
     margin: 0.25em;
     border-radius: 100%;
-    background: var(--colorE-50);
     cursor: pointer;
 }
 
+article.pensum ul.term li div.badge div.info {
+    background: var(--colorE-50);
+}
+
+article.pensum ul.term li div.badge div.del {
+    background: var(--colorA-30);
+}
+
+article.pensum ul.term li div.badge div.edit {
+    background: var(--colorD-50);
+}
 /* Star Mode */
 
 article.pensum.selection ul.term li {
@@ -473,7 +484,16 @@ aside ul {
     list-style-type: none;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    position: relative;
+}
+
+aside.edit ul.view {
+    display: none;
+}
+
+aside:not(.edit) ul.edit {
+    display: none;
 }
 
 aside ul li {
@@ -487,13 +507,28 @@ aside ul li {
     display: flex;
 }
 
+aside.edit ul li {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+}
+
+/* aside.edit ul li p {
+    user-select: none;
+    font-weight: bold;
+    font-variant: small-caps;
+    line-height: 0;
+    word-spacing: 0;
+} */
+
 aside ul li:hover {
     background: var(--neutral-40);
 }
 
 /* Info */
 
-body > div.infoBanner {
+body > div.banner {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -505,23 +540,27 @@ body > div.infoBanner {
     left: 0;
     padding: 1em;
     z-index: 1003;
+    /* overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none; */
 }
 
-body > div.infoBanner > div {
+body > div.banner > div {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     background: var(--neutral-10);
     color: var(--foreground);
     padding: 1em;
     border-radius: 1em;
     font-variant: all-small-caps;
-    min-width: 25vw;
+    min-width: 35vw;
     min-height: 25vh;
+    max-height: 95%;
+    overflow-y: auto;
+    align-items: center;
 }
 
-body > div.infoBanner h3 {
+body > div.banner h3 {
     font-size: 2em;
     margin: 0.5em 0.5em 0em 0.5em;
 }
@@ -559,7 +598,12 @@ body > div.infoBanner h4 {
     margin-top: 1em;
 }
 
-body > div.infoBanner div.hours {
+body > div.banner div.hours h4 {
+    flex: 1 100%;
+    text-align: center;
+}
+
+body > div.banner div.hours {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -589,7 +633,7 @@ body > div.infoBanner div.hours div.extendInfo.show {
 
 /* Create */
 
-.create form {
+form {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -597,7 +641,7 @@ body > div.infoBanner div.hours div.extendInfo.show {
     margin: 1em;
 }
 
-.create form div.form {
+form div.form {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -605,9 +649,9 @@ body > div.infoBanner div.hours div.extendInfo.show {
     margin: 0.5em;
 }
 
-.create form div.form input,
-.create form div.form textarea,
-.create form div.form select {
+form div.form input,
+form div.form textarea,
+form div.form select {
     padding: 0.5em;
     margin: 0 0.5em 0.5em 0.5em;
     border-radius: 1em;
@@ -618,27 +662,31 @@ body > div.infoBanner div.hours div.extendInfo.show {
     text-align: center;
 }
 
-.create form div.form input:not(:placeholder-shown)[type="text"] {
+form div.form .needed {
+    border: 0.2em solid var(--colorA-50);
+}
+
+form div.form input:not(:placeholder-shown)[type="text"] {
     text-align: left;
     background: var(--neutral-40);
 }
 
-.create form div.form input:hover,
-.create form div.form textarea:hover,
-.create form div.form select:hover {
+form div.form input:hover,
+form div.form textarea:hover,
+form div.form select:hover {
     background: var(--neutral-30) !important;
 }
 
-.create form div.form select option:checked {
+form div.form select option:checked {
     background: var(--neutral-40);
 }
 
-.create form div.form label {
+form div.form label {
     font-variant: all-small-caps;
     font-weight: bold;
 }
 
-.create form div.form button {
+form div.form button {
     padding: 0.75em;
     margin: 1em;
     border-radius: 1em;
@@ -652,32 +700,34 @@ body > div.infoBanner div.hours div.extendInfo.show {
     align-items: center;
 }
 
-.create form div.form button * {
+form div.form button * {
     cursor: pointer;
 }
 
-.create form div.form button#create:hover {
+form div.form button:focus {
+    border: none;
+}
+
+form div.form button#create:hover,form div.form button#create:focus {
     background: var(--colorA-70);
 }
 
-.create form div.form button#clear:hover {
+form div.form button#clear:hover,form div.form button#clear:focus {
     background: var(--colorB-60);
 }
 
-.create form div.form textarea {
+form div.form textarea {
     text-align: left;
 }
 
-.create form div.form.submit {
+form div.form.submit {
     flex-direction: row;
     width: 100%;
     justify-content: space-between;
     align-items: stretch;
-    /* justify-self: left; */
-    /* align-self: left; */
 }
 
-.create form div.new {
+form div.new {
     display: none;
     flex-wrap: wrap;
     flex-direction: row;
@@ -685,11 +735,37 @@ body > div.infoBanner div.hours div.extendInfo.show {
     align-items: center;
 }
 
-.create form div.new.show {
+form div.new.show {
     display: flex;
 }
 
-.create form div.new  h4 {
+form div.new  h4 {
     flex:1 100%;
     text-align: center;
+}
+
+/* Mode Edit */
+
+article.pensum li.add img {
+    width: 3em;
+    filter: invert(1);
+}
+
+article.pensum ul.term li.add {
+    background: var(--neutral-50);
+}
+
+article.pensum ul.term li.add:hover {
+    background: var(--neutral-70);
+}
+
+article.pensum ul.add {
+    opacity: .2;
+    transition:.3s ease-out;
+    cursor: pointer;
+}
+
+article.pensum ul.add:hover {
+    opacity: 1;
+    transition:.2s ease-in
 }

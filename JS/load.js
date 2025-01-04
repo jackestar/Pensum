@@ -43,13 +43,13 @@ const historyNav = () => {
 
 const scriptUpdate = () => {
     // Script update
-    historyNav();
     availableList();
     formEdit();
+    historyNav();
 };
 
 // Handle back/forward navigation
-window.addEventListener("popstate", async (e) => {
+window.addEventListener("popstate", async e => {
     const url = location.pathname;
 
     // Fetch and update content when navigating back/forward
@@ -88,18 +88,23 @@ const availableList = async (doc = document) => {
     const dir = "/pensums/";
     const list = await importJSON(dir + "list.json");
 
-    list["listado"].forEach((item) => {
+    list["listado"].forEach(async (item) => {
         const element = addListElement(item, "/icons/article.svg", "#" + item);
         available.appendChild(element);
         element.addEventListener("click", async (e) => {
             const list = await filterJSON(
                 await importJSON(dir + item + ".json")
             );
+
+            actualPensum.selectionMode = 0;
+
+            await drawAside("/view.html");
+
             drawPensumTable(list);
 
-            actualPensum.linkName = item;
+            initCanvas()
 
-            drawAside();
+            actualPensum.linkName = item;
         });
     });
 
@@ -147,11 +152,20 @@ const formEdit = (doc = document) => {
     // create pensum
     const create = form.querySelector("button#create");
     if (create) {
-        create.addEventListener("click", e => {
-            actualPensum.career = form.querySelector("#career").value;
+        create.addEventListener("click", async e => {
+            actualPensum = PensumFormat
+            const nameElement = form.querySelector("#career")
+            let name = nameElement.value;
+            if (name == "") {
+                nameElement.classList.add("needed");
+                nameElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                return;
+            }
+            actualPensum.career = name
+
             actualPensum.faculty = form.querySelector("#faculty").value;
             actualPensum.description = form.querySelector("#description").value;
-            actualPensum.terms = parseInt(form.querySelector("#semester").value);
+            actualPensum.terms = parseInt(form.querySelector("#term").value);
             const termName = form.querySelector("#termName").value.split(",");
             if (termName == "custom")
                 actualPensum.termName = [form.querySelector("#termName0").value, form.querySelector("#termName1").value];
@@ -161,11 +175,12 @@ const formEdit = (doc = document) => {
             actualPensum.selectionMode = 3;
 
             actualPensum.linkName = "Nuevo";
-            actualPensum.coursesByterm = Array.from({ length: actualPensum.terms }, () => []);
+
+            actualPensum.coursesByTerm = Array.from({ length: actualPensum.terms }, () => []);
+
+            await drawAside("/create.html");
 
             drawPensumTable(actualPensum);
-
-            drawAside();
         });
     }
 
