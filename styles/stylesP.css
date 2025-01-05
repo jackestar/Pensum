@@ -453,6 +453,10 @@ aside.path li.path {
     background: var(--colorF-50);
 }
 
+aside.view li.view {
+    background: var(--colorF-50);
+}
+
 /* canvas */
 
 canvas.arrow {
@@ -570,14 +574,14 @@ body > div.infoBanner p.code {
     margin-bottom: 1em;
 }
 
-body > div.infoBanner ul {
+body > div.banner ul {
     list-style-type: none;
     display: flex;
     /* flex-direction: column; */
     align-items: center;
 }
 
-body > div.infoBanner ul li {
+body > div.banner ul li {
     padding: 0.5em;
     margin: 0.5em;
     border-radius: 1em;
@@ -590,7 +594,7 @@ body > div.infoBanner ul li {
     align-items: center;
 }
 
-body > div.infoBanner ul li:hover {
+body > div.banner ul li:hover {
     background: var(--neutral-40);
 }
 
@@ -629,6 +633,36 @@ body > div.infoBanner div.hours div.extendInfo {
 
 body > div.infoBanner div.hours div.extendInfo.show {
     display: flex;
+}
+
+div.addBanner div.requisites {
+    align-items: stretch;
+}
+
+div.addBanner div.requisites div.mode {
+    display: flex;
+}
+
+div.addBanner form ul {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 5em;
+    max-height: 15em;
+    overflow: auto;
+}
+
+div.addBanner form ul li {
+    display: flex;
+    flex-direction: column;
+}
+
+div.addBanner form div.form .preSelected {
+    background: var(--colorA-50);
+}
+
+div.addBanner form div.form .coSelected {
+    background: var(--colorE-50);
 }
 
 /* Create */
@@ -708,11 +742,13 @@ form div.form button:focus {
     border: none;
 }
 
-form div.form button#create:hover,form div.form button#create:focus {
+form div.form button#create:hover,
+form div.form button#create:focus {
     background: var(--colorA-70);
 }
 
-form div.form button#clear:hover,form div.form button#clear:focus {
+form div.form button#clear:hover,
+form div.form button#clear:focus {
     background: var(--colorB-60);
 }
 
@@ -739,8 +775,8 @@ form div.new.show {
     display: flex;
 }
 
-form div.new  h4 {
-    flex:1 100%;
+form div.new h4 {
+    flex: 1 100%;
     text-align: center;
 }
 
@@ -760,12 +796,12 @@ article.pensum ul.term li.add:hover {
 }
 
 article.pensum ul.add {
-    opacity: .2;
-    transition:.3s ease-out;
+    opacity: 0.2;
+    transition: 0.3s ease-out;
     cursor: pointer;
 }
 
 article.pensum ul.add:hover {
     opacity: 1;
-    transition:.2s ease-in
+    transition: 0.2s ease-in;
 }
