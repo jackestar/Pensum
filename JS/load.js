@@ -1,6 +1,6 @@
 const historyNav = () => {
-    document.querySelectorAll("[data-url]").forEach((button) => {
-        button.addEventListener("click", async (e) => {
+    document.querySelectorAll("[data-url]").forEach(button => {
+        button.addEventListener("click", async e => {
             // console.log("create and destroy")
             const url = button.getAttribute("data-url");
 
@@ -41,6 +41,34 @@ const historyNav = () => {
     });
 };
 
+const documentLoaded = () => {
+    const main = document.querySelector("main");
+    main.classList.add("show");
+
+    document.body.addEventListener("dragleave", e => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    ["dragenter", "dragover"].forEach(eventName => {
+        document.body.addEventListener(eventName, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            importRecord();
+        });
+    });
+    ["drop"].forEach(e => {
+        document.body.addEventListener(e, ev => {
+            e.preventDefault();
+            e.stopPropagation();
+            const Old = document.querySelector(".banner");
+            if (Old) Old.remove();
+        });
+    });
+
+    scriptUpdate();
+};
+
 const scriptUpdate = () => {
     // Script update
     availableList();
@@ -65,8 +93,7 @@ window.addEventListener("popstate", async e => {
 
         // Replace the content
         document.title = doc.title;
-        document.querySelector("main").innerHTML =
-            doc.querySelector("main").innerHTML;
+        document.querySelector("main").innerHTML = doc.querySelector("main").innerHTML;
 
         scriptUpdate();
     } else {
@@ -88,13 +115,11 @@ const availableList = async (doc = document) => {
     const dir = "/pensums/";
     const list = await importJSON(dir + "list.json");
 
-    list["listado"].forEach(async (item) => {
+    list["listado"].forEach(async item => {
         const element = addListElement(item, "/icons/article.svg", "#" + item);
         available.appendChild(element);
-        element.addEventListener("click", async (e) => {
-            const list = await filterJSON(
-                await importJSON(dir + item + ".json")
-            );
+        element.addEventListener("click", async e => {
+            const list = await filterJSON(await importJSON(dir + item + ".json"));
 
             actualPensum.selectionMode = 0;
 
@@ -102,18 +127,14 @@ const availableList = async (doc = document) => {
 
             drawPensumTable(list);
 
-            initCanvas()
+            initCanvas();
 
             actualPensum.linkName = item;
         });
     });
 
     if (actualPensum.linkName) {
-        const elementBack = addListElement(
-            `Volver (${actualPensum.linkName})`,
-            "/icons/arrow_back.svg",
-            "#" + actualPensum.linkName + "?back"
-        );
+        const elementBack = addListElement(`Volver (${actualPensum.linkName})`, "/icons/arrow_back.svg", "#" + actualPensum.linkName + "?back");
         elementBack.classList.add("back");
         available.appendChild(elementBack);
     }
@@ -130,18 +151,18 @@ const formEdit = (doc = document) => {
     if (!form) return;
 
     // Prevent default
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", e => {
         e.preventDefault();
     });
 
     // custom select
     const customs = form.querySelectorAll(".custom");
     if (customs.length) {
-        customs.forEach((custom) => {
+        customs.forEach(custom => {
             const select = custom.querySelector("select");
             const newDiv = custom.querySelector(".new");
 
-            select.addEventListener("change", (e) => {
+            select.addEventListener("change", e => {
                 const value = select.value;
                 if (value == "custom") newDiv.classList.add("show");
                 else newDiv.classList.remove("show");
@@ -153,35 +174,35 @@ const formEdit = (doc = document) => {
     const create = form.querySelector("button#create");
     if (create) {
         create.addEventListener("click", async e => {
-            actualPensum = PensumFormat
-            const nameElement = form.querySelector("#career")
+            actualPensum = PensumFormat;
+            const nameElement = form.querySelector("#career");
             let name = nameElement.value;
             if (name == "") {
                 nameElement.classList.add("needed");
-                nameElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                nameElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
                 return;
             }
-            actualPensum.career = name
+            actualPensum.career = name;
 
             actualPensum.faculty = form.querySelector("#faculty").value;
             actualPensum.description = form.querySelector("#description").value;
             actualPensum.terms = parseInt(form.querySelector("#term").value);
             const termName = form.querySelector("#termName").value.split(",");
-            if (termName == "custom")
-                actualPensum.termName = [form.querySelector("#termName0").value, form.querySelector("#termName1").value];
-            else
-                actualPensum.termName = [termName[0], termName[1]];
+            if (termName == "custom") actualPensum.termName = [form.querySelector("#termName0").value, form.querySelector("#termName1").value];
+            else actualPensum.termName = [termName[0], termName[1]];
 
             actualPensum.selectionMode = 3;
 
             actualPensum.linkName = "Nuevo";
 
-            actualPensum.coursesByTerm = Array.from({ length: actualPensum.terms }, () => []);
+            actualPensum.coursesByTerm = Array.from({length: actualPensum.terms}, () => []);
 
             await drawAside("/create.html");
 
             drawPensumTable(actualPensum);
         });
     }
-
 };

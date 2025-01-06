@@ -7,6 +7,8 @@
         <link rel="stylesheet" href="./styles/stylesP.css" />
         <link rel="prefetch" href="./create.html" as="document" />
         <link rel="prefetch" href="./index.html" as="document" />
+        <script async type="module" src="./JS/pdf.mjs"></script>
+        <link rel="prefetch" href="./JS/pdf.worker.mjs" as="script" />
         <title>Create/Edit | Pensum Generator</title>
         <style>
             main {
@@ -81,7 +83,7 @@
                             </div>
                         </div>
                         <div class="form">
-                            <label for="term">Terminos</label>
+                            <label for="term">Términos</label>
                             <input
                                 type="number"
                                 name="term"
@@ -123,11 +125,7 @@
         <script src="./JS/pensum.js"></script>
         <script src="./JS/load.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const main = document.querySelector("main");
-                main.classList.add("show");
-                scriptUpdate();
-            });
+            document.addEventListener("DOMContentLoaded", documentLoaded);
         </script>
     </body>
 </html>

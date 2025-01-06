@@ -7,6 +7,8 @@
         <link rel="stylesheet" href="./styles/stylesP.css" />
         <link rel="prefetch" href="./create.html" as="document" />
         <link rel="prefetch" href="./index.html" as="document" />
+        <script async type="module" src="./JS/pdf.mjs"></script>
+        <link rel="prefetch" href="./JS/pdf.worker.mjs" as="script" />
         <title>Ver Pensum | Pensum Generator</title>
         <style>
             main {
@@ -31,8 +33,7 @@
                     </div>
                 </section>
                 <section class="interact">
-                    <div class="available">
-                    </div>
+                    <div class="available"></div>
                     <div>
                         <mr></mr>
                         <div data-url="#open">
@@ -44,7 +45,8 @@
                 <section class="footer">
                     <p>
                         Desarrollado por
-                        <a href="https://github.com/jackestar">Jackestar</a> 2025
+                        <a href="https://github.com/jackestar">Jackestar</a>
+                        2025
                     </p>
                 </section>
             </div>
@@ -53,11 +55,7 @@
         <script src="./JS/pensum.js"></script>
         <script src="./JS/load.js"></script>
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const main = document.querySelector("main");
-                main.classList.add("show");
-                scriptUpdate();
-            });
+            document.addEventListener("DOMContentLoaded", documentLoaded);
         </script>
     </body>
 </html>
