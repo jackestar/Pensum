@@ -107,7 +107,7 @@
 body {
     min-height: 100vh;
     min-width: 100vw;
-    /* width:100%; */
+    /* width:100vw; */
     display: flex;
     justify-content: center;
     background: var(--neutral-10);
@@ -296,7 +296,6 @@ div.infoBanner nav img {
 nav img {
     padding: 1em;
     cursor: pointer;
-    /* justify-self: center; */
 }
 
 article.pensum {
@@ -445,8 +444,18 @@ article.pensum.selection ul.term li:first-child {
 
 /* Path Mode */
 
-article.pensum.path ul.term li.passed {
+article.pensum.path ul.term li.passed,
+article.pensum.view ul.term li.passed {
     background: var(--colorF-50);
+}
+
+article.pensum.path ul.term li.readonly,
+article.pensum.view ul.term li.readonly {
+    background: var(--colorA-40);
+}
+
+article.pensum.star ul.term li.readonly {
+    background: var(--colorD-80);   
 }
 
 aside.path li.path {
@@ -558,7 +567,7 @@ body > div.banner > div {
     border-radius: 1em;
     font-variant: all-small-caps;
     min-width: 35vw;
-    min-height: 25vh;
+    min-height: 35vh;
     max-height: 95%;
     overflow-y: auto;
     align-items: center;
@@ -665,6 +674,40 @@ div.addBanner form div.form .coSelected {
     background: var(--colorE-50);
 }
 
+body div.banner.importBanner {
+    z-index: 1011;
+}
+
+div.importBanner h3 {
+    padding-bottom: 1em;
+}
+
+div.importBanner div.box {
+    width: 50vw;
+    height: 50vw;
+    max-width: 50vh;
+    max-height: 50vh;
+    border: dotted 0.5em var(--neutral-40);
+    padding: 0.5em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+div.importBanner div.box h4 {
+    font-size: large;
+}
+
+/* Error */
+
+body>div.banner.errorBanner {
+    z-index: 1020;
+}
+
 /* Create */
 
 form {
@@ -750,6 +793,11 @@ form div.form button#create:focus {
 form div.form button#clear:hover,
 form div.form button#clear:focus {
     background: var(--colorB-60);
+}
+
+form div.form button#edit:hover,
+form div.form button#edit:focus {
+    background: var(--colorD-60);
 }
 
 form div.form textarea {

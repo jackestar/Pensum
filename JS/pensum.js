@@ -23,7 +23,6 @@ const PensumFormat = {
     termName: ["", ""], // singular, plural
     formatVersion: FormatVersion,
     courses: [],
-    coursesByTerm: [],
     addCourse: function (course) {
         this.courses.push(course);
         this.coursesByTerm[course.term - 1].push(course);
@@ -70,19 +69,32 @@ const importJSON = async url => {
     if (response.ok) {
         return await response.json();
     } else {
-        // Error handling
-        console.error("Error importando JSON");
+        drawError("Error importando JSON");
         return [];
     }
 };
+const filter = (object, filterObject) => {
+    const objectKeys = Object.keys(filterObject).filter(key => typeof filterObject[key] !== "function");
+    filtered = {};
+    objectKeys.forEach(key => {
+        if (object.hasOwnProperty(key)) {
+            filtered[key] = object[key];
+        }
+    });
+    return filtered;
+};
+const courseFilter = (course, courseF = courseFormat) => {
+    return filter(course, courseF);
+};
+const formatFilter = (pensum, pensumF = PensumFormat) => {
+    return filter(pensum, pensumF);
+};
 
-const filterJSON = async (json, courseF = courseFormat, formatVersion = FormatVersion) => {
-    const courseKeys = Object.keys(courseF).filter(key => typeof courseF[key] !== "function");
-    const pensum = await json;
+const filterJSON = async (json, formatVersion = FormatVersion) => {
+    const pensum = formatFilter(await json);
 
     if (pensum.formatVersion !== formatVersion) {
-        // Error handling
-        console.error("Formato de pensum no compatible");
+        drawError("Formato de pensum no compatible");
         return [];
     }
 
@@ -95,8 +107,9 @@ const filterJSON = async (json, courseF = courseFormat, formatVersion = FormatVe
     pensum.coursesByTerm = Array.from({length: pensum.terms}, () => []);
 
     pensum.courses = pensum.courses.map((course, index) => {
+        pensum.totalCredits += course.credits;
+        course = courseFilter(course);
         let sem = course.term - 1;
-        // course.index = index;
         course.passed = false;
         course.required = course.required ? course.required : [];
         course.corequired = course.corequired ? course.corequired : [];
@@ -109,7 +122,6 @@ const filterJSON = async (json, courseF = courseFormat, formatVersion = FormatVe
                 const co = pensum.courses.find(c => c.code === corequisite);
                 co.corequired ? co.corequired.push(pensum.courses.indexOf(course)) : (co.corequired = [pensum.courses.indexOf(course)]);
                 course.corequisites[index] = pensum.courses.indexOf(co);
-                // co.corequired = true;
             });
         }
         if (course.prerequisites.length) {
@@ -124,15 +136,7 @@ const filterJSON = async (json, courseF = courseFormat, formatVersion = FormatVe
             if (course.careerRequirement[1]) course.available = false;
         }
         pensum.coursesByTerm[sem].push(course);
-
-        filtered = course;
-        pensum.totalCredits += course.credits;
-        courseKeys.forEach(key => {
-            if (course.hasOwnProperty(key)) {
-                filtered[key] = course[key];
-            }
-        });
-        return filtered;
+        return course;
     });
     pensum.courses.forEach(course => {
         if (course.corequisites.length && course.term > 1) {
@@ -146,7 +150,28 @@ const filterJSON = async (json, courseF = courseFormat, formatVersion = FormatVe
 
 // Export Json
 
-const exportJson = (pensum = actualPensum) => {};
+const exportJson = (pensum = actualPensum) => {
+    pensum = formatFilter(actualPensum);
+    pensum.courses = [...pensum.courses].map((course, index) => {
+        course.corequisites.forEach((cor, i) => (pensum.courses[index].corequisites[i] = pensum.courses[cor].code));
+        course.prerequisites.forEach((pre, i) => (pensum.courses[index].prerequisites[i] = pensum.courses[pre].code));
+        return courseFilter(course);
+    });
+
+    const jsonString = JSON.stringify(pensum);
+    const url = URL.createObjectURL(new Blob([jsonString], {type: "application/json"}));
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${actualPensum.linkName}.json`;
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return pensum;
+};
 
 // Element Builder
 
@@ -185,7 +210,7 @@ const createPensumTable = pensum => {
                 if (actualPensum.selectionMode == 1 || actualPensum.selectionMode == 2)
                     filtered.forEach(course => {
                         if (!isAllPassed) course.passed = false;
-                        elementAction(course.element, pensum.courses.indexOf(course));
+                        if (!course.readonly) elementAction(course.element, pensum.courses.indexOf(course));
                     });
             }
         });
@@ -217,7 +242,7 @@ const createPensumTable = pensum => {
         actualPensum.coursesByTerm[term].forEach(course => {
             const li = document.createElement("li");
             li.addEventListener("click", e => {
-                actualPensum.elementSelected = elementAction(li, pensum.courses.indexOf(course));
+                if (!course.readonly) actualPensum.elementSelected = elementAction(li, pensum.courses.indexOf(course));
             });
 
             const h3 = document.createElement("h3");
@@ -264,7 +289,6 @@ const createPensumTable = pensum => {
             li.appendChild(p);
             li.appendChild(badges);
             course.element = li;
-            // actualPensum.courses[course.index].element = li;
             ul.appendChild(li);
             updateCourse(li, pensum.courses.indexOf(course));
         });
@@ -348,6 +372,9 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
             actualPensum.addTerm();
             drawPensumTable(actualPensum);
         });
+        doc.querySelector(".editCreate").addEventListener("click", e => {
+            editCreate();
+        });
 
         doc.querySelector(".addCourse").addEventListener("click", e => {
             addCourseAction();
@@ -373,10 +400,9 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
             if (aside != doc) aside.remove();
         });
     } else {
-        console.error("Failed to load aside.");
+        drawError("Failed to load aside.");
     }
     historyNav();
-    // scriptUpdate();
 };
 
 let asideUpdate = (doc = document.querySelector("aside")) => {
@@ -409,11 +435,65 @@ updateCourse = (element, index) => {
     } else {
         element.classList.add("unavailable");
     }
-    if (course.passed) element.classList.add("passed");
-    else element.classList.remove("passed");
+    if (course.readonly) element.classList.add("readonly");
+    else {
+        element.classList.remove("readonly");
+        if (course.passed) element.classList.add("passed");
+        else element.classList.remove("passed");
+    }
     if (course.availableNext) element.classList.add("available-next");
     else element.classList.remove("available-next");
     return element;
+};
+
+const calculateAvailability = course => {
+    let av = true;
+    if (course.prerequisites.length) av &= course.prerequisites.every(prereq => actualPensum.courses[prereq].passed);
+    if (course.corequisites.length) av &= course.corequisites.every(coreq => actualPensum.courses[coreq].available || actualPensum.courses[coreq].availableNext);
+    if (course.careerRequirement) av &= course.careerRequirement[0] <= actualPensum.actualCredits;
+    return av;
+};
+let requiredAction = () => {};
+const requiredChain = (required, chain = []) => {
+    required.forEach(req => {
+        chain.push(req);
+        const reCourse = actualPensum.courses[req];
+        requiredAction(reCourse);
+
+        requiredChain(
+            reCourse.required.filter(c => !chain.includes(c)),
+            chain
+        );
+        requiredChain(
+            reCourse.corequired.filter(c => !chain.includes(c)),
+            chain
+        );
+        updateCourse(reCourse.element, actualPensum.courses.indexOf(reCourse));
+    });
+};
+const pathCourseCalc = course => {
+    requiredAction = course => {
+        if (calculateAvailability(course) && !course.available) course.availableNext = true;
+        else course.availableNext = false;
+    };
+    requiredChain(course.corequired);
+    requiredChain(course.required);
+};
+const viewCourseCalc = course => {
+    requiredAction = course => {
+        if (calculateAvailability(course)) {
+            course.available = true;
+            course.availableNext = false;
+        } else {
+            if (course.passed) {
+                actualPensum.actualCredits -= course.credits;
+                course.passed = false;
+            }
+            course.available = false;
+        }
+    };
+    requiredChain(course.corequired);
+    requiredChain(course.required);
 };
 
 const elementAction = (element, index) => {
@@ -496,52 +576,12 @@ const elementAction = (element, index) => {
             course.passed = true;
             actualPensum.actualCredits += course.credits;
         }
-        const calculateAvailability = course => {
-            let av = true;
-            if (course.prerequisites.length) av &= course.prerequisites.every(prereq => actualPensum.courses[prereq].passed);
-            if (course.corequisites.length) av &= course.corequisites.every(coreq => actualPensum.courses[coreq].available || actualPensum.courses[coreq].availableNext);
-            return av;
-        };
-        let requiredAction = () => {};
-        const requiredChain = (required, chain = []) => {
-            required.forEach(req => {
-                chain.push(req);
-                const reCourse = actualPensum.courses[req];
-                requiredAction(reCourse);
-
-                requiredChain(
-                    reCourse.required.filter(c => !chain.includes(c)),
-                    chain
-                );
-                requiredChain(
-                    reCourse.corequired.filter(c => !chain.includes(c)),
-                    chain
-                );
-                updateCourse(reCourse.element, actualPensum.courses.indexOf(reCourse));
-            });
-        };
         if (actualPensum.selectionMode == 1) {
             // Path Mode
-            requiredAction = course => {
-                if (calculateAvailability(course) && !course.available) course.availableNext = true;
-                else course.availableNext = false;
-            };
-            requiredChain(course.corequired);
-            requiredChain(course.required);
+            pathCourseCalc(course);
         } else if (actualPensum.selectionMode == 2) {
             // View Mode
-            requiredAction = course => {
-                if (calculateAvailability(course)) {
-                    course.available = true;
-                    course.availableNext = false;
-                } else {
-                    course.available = false;
-                    actualPensum.actualCredits -= course.credits;
-                    course.passed = false;
-                }
-            };
-            requiredChain(course.corequired);
-            requiredChain(course.required);
+            viewCourseCalc(course);
         }
     }
 
@@ -638,7 +678,6 @@ const infoAction = index => {
         cont.appendChild(h4);
         if (course.careerRequirement) {
             const ul = document.createElement("ul");
-            // h4.textContent = "Requisitos de Carrera";
             if (course.careerRequirement[0]) {
                 const li = document.createElement("li");
                 li.textContent = `${course.careerRequirement[0]} Créditos`;
@@ -703,7 +742,7 @@ const addCourseAction = (term = actualPensum.terms) => {
             label: "name",
             name: "name",
             type: "text",
-            placeholder: "name del Curso",
+            placeholder: "Nombre del Curso",
         },
         {
             label: "Créditos",
@@ -936,10 +975,7 @@ const addCourseAction = (term = actualPensum.terms) => {
         newCourse.description = form.description.value;
         newCourse.careerRequirement = [parseInt(form.careerRequirementCredits.value), parseInt(form.careerRequirementTerm.value)];
 
-        // calculate availability...
         newCourse.available = false;
-
-        // newCourse.index = actualPensum.courses.length;
 
         actualPensum.addCourse(newCourse);
         drawPensumTable(actualPensum);
@@ -992,7 +1028,6 @@ const importRecord = () => {
         ev.stopPropagation();
         const files = [...ev.dataTransfer.items].filter(e => e.kind == "file" && e.type == "application/pdf").map(file => file.getAsFile());
         if (files.length) {
-            // console.log(files,files.length)
             // multiple file handle
 
             const reader = new FileReader();
@@ -1001,8 +1036,8 @@ const importRecord = () => {
                 const file = atob(reader.result.slice(28));
 
                 if (typeof pdfjsLib == "undefined")
-                    // Error Handle
-                    console.log("Cargando pdf handler");
+                    // Error Handle (info Handle)
+                    drawError("Cargando pdf handler");
                 else {
                     pdfjsLib.GlobalWorkerOptions.workerSrc = "/JS/pdf.worker.mjs";
                     extractText(file).then(text => {
@@ -1014,7 +1049,7 @@ const importRecord = () => {
             importBanner.remove();
         } else {
             // Error Handle
-            console.error("Debe ser un archivo pdf");
+            drawError("Debe ser un archivo pdf");
         }
     });
 };
@@ -1042,17 +1077,20 @@ const extractText = pdfUrl => {
     });
 };
 
+// UNEFA
 const readRecord = texto => {
-    // console.log(texto);
-    // actualPensum.actualCredits = 0;
     if (!texto.includes("UNIVERSIDAD NACIONAL EXPERIMENTALPOLITÉCNICA DE LA FUERZA ARMADA NACIONAL BOLIVARIANAU.N.E.F.ANÚCLEO")) {
         console.log("Record academico no valido...");
         return 0;
     }
     actualPensum.actualCredits = 0;
-    const codes = [...actualPensum.courses.map(e => e.code)];
-
-    // console.log(codes)
+    const codes = [
+        ...actualPensum.courses.map(e => {
+            e.passed = false;
+            e.availableNext = false;
+            return e.code;
+        }),
+    ];
 
     let contenido = [];
     contenido = texto.split(new RegExp("[0-9PIV]-[0-9]{4} "));
@@ -1079,6 +1117,7 @@ const readRecord = texto => {
                         actualPensum.actualCredits += actualPensum.courses[h].credits;
                         actualPensum.courses[h].passed = true;
                         actualPensum.courses[h].available = true;
+                        actualPensum.courses[h].readonly = true;
                         break;
                     }
                 } else if (e.includes("ELECTIVA")) {
@@ -1089,12 +1128,14 @@ const readRecord = texto => {
                         if (actualPensum.courses[w].name.includes("Electiva No") && e.includes("A NO")) {
                             actualPensum.courses[w].passed = true;
                             actualPensum.courses[w].available = true;
+                            actualPensum.courses[w].readonly = true;
                             actualPensum.actualCredits += actualPensum.courses[w].credits;
                             broken = true;
                             break;
                         } else if (actualPensum.courses[w].name.includes("Electiva T") && e.includes("A TE")) {
                             actualPensum.courses[w].passed = true;
                             actualPensum.courses[w].available = true;
+                            actualPensum.courses[w].readonly = true;
                             actualPensum.actualCredits += actualPensum.courses[w].credits;
                             broken = true;
                             break;
@@ -1105,24 +1146,12 @@ const readRecord = texto => {
             }
         }
     });
-
+    const notReadOnlyCourses = actualPensum.courses.filter(course => course.readonly);
+    notReadOnlyCourses.forEach(viewCourseCalc);
     drawPensumTable(actualPensum);
     modeChange(1);
-    // actualPensum.courses.forEach((course, index) =>
-
-    // );
     asideUpdate();
-    // erase = texto
-    // this.loaded = true;
-    // if (actualPensum.courseselected != undefined) {
-    //     this.infor();
-    //     this.infoT();
-    // }
-    // this.Generate();
-    // document.querySelector("div.blk").classList.remove("look");
 };
-
-// let a
 
 // Mode change
 
@@ -1134,15 +1163,21 @@ const modeChange = mode => {
     if (actualPensum.elementSelected.length) actualPensum.elementSelected[0].classList.remove("selected");
     actualPensum.elementSelected = [];
 
-    if (mode == 1) {
-        actualPensum.element.classList.add("path");
-        actualPensum.element.classList.remove("view");
-    } else if (mode == 2) {
-        actualPensum.element.classList.add("view");
-        actualPensum.element.classList.remove("path");
-    } else {
-        actualPensum.element.classList.remove("path");
-        actualPensum.element.classList.remove("view");
+    switch (mode) {
+        case 0:
+            actualPensum.element.classList.add("star");
+            actualPensum.element.classList.remove("view", "path");
+            break;
+        case 1:
+            actualPensum.element.classList.add("path");
+            actualPensum.element.classList.remove("view", "star");
+            break;
+        case 2:
+            actualPensum.element.classList.add("view");
+            actualPensum.element.classList.remove("path", "star");
+            break;
+        default:
+            break;
     }
 
     // Clear Canvas
@@ -1162,4 +1197,72 @@ const initCanvas = () => {
     canvas.width = actualPensum.element.scrollWidth;
     canvas.height = actualPensum.element.scrollHeight;
     return canvas.getContext("2d");
+};
+
+// Error handler
+
+const drawError = errorMsj => {
+    // error only replace errors
+    const Old = document.querySelector(".errorBanner");
+    if (Old) Old.remove();
+    const errorBanner = document.createElement("div");
+    errorBanner.classList.add("errorBanner", "banner");
+    errorBanner.addEventListener("click", e => (e.target == errorBanner ? errorBanner.remove() : null));
+    const cont = document.createElement("div");
+    const h3 = document.createElement("h3");
+    h3.textContent = "Error";
+    const p = document.createElement("p");
+    p.textContent = errorMsj;
+    cont.appendChild(h3);
+    cont.appendChild(p);
+    errorBanner.appendChild(cont);
+    document.body.appendChild(errorBanner);
+    console.log(errorMsj);
+};
+
+const editCreate = async () => {
+    const response = await fetch("/create.html");
+    if (response.ok) {
+        const newContent = await response.text();
+
+        // Extract response
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(newContent, "text/html");
+
+        doc.querySelector("nav").remove();
+        doc.querySelector("div.form.term").remove();
+
+        const submit = doc.querySelector("div.form.submit");
+        submit.innerHTML = "";
+        const buttonClear = document.createElement("button");
+        buttonClear.id = "clear";
+        const labelClear = document.createElement("label");
+        labelClear.textContent = "Limpiar";
+        labelClear.type = "reset";
+        buttonClear.appendChild(labelClear);
+        submit.appendChild(buttonClear);
+
+        const buttonEdit = document.createElement("button");
+        buttonEdit.id = "edit";
+        const labelEdit = document.createElement("label");
+        labelEdit.textContent = "Guardar";
+        const imgEdit = document.createElement("img");
+        imgEdit.src = "/icons/save.svg";
+        buttonEdit.appendChild(imgEdit);
+        buttonEdit.appendChild(labelEdit);
+        submit.appendChild(buttonEdit);
+
+        // Replace the content
+        const main = document.querySelector("main");
+        main.innerHTML = doc.querySelector("main").innerHTML;
+        main.classList.add("show");
+
+        document.querySelector("form div.form input#career").value = actualPensum.career;
+        document.querySelector("form div.form input#faculty").value = actualPensum.faculty;
+        document.querySelector("form div.form textarea#description").value = actualPensum.description;
+        document.querySelector("form div.form select#termName").value = actualPensum.termName.join();
+        formEdit();
+    } else {
+        drawError("Failed to load the page.");
+    }
 };

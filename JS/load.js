@@ -1,7 +1,6 @@
 const historyNav = () => {
     document.querySelectorAll("[data-url]").forEach(button => {
         button.addEventListener("click", async e => {
-            // console.log("create and destroy")
             const url = button.getAttribute("data-url");
 
             // ?back
@@ -29,13 +28,11 @@ const historyNav = () => {
                 document.title = doc.title;
                 const main = document.querySelector("main");
                 main.innerHTML = doc.querySelector("main").innerHTML;
-                // if (!button.classList.contains("back")) {
                 main.classList.add("show");
-                // } else main.classList.remove("show");
 
                 scriptUpdate();
             } else {
-                console.error("Failed to load the page.");
+                drawError("Failed to load the page.");
             }
         });
     });
@@ -69,9 +66,9 @@ const documentLoaded = () => {
     scriptUpdate();
 };
 
-const scriptUpdate = () => {
+const scriptUpdate = async () => {
     // Script update
-    availableList();
+    await availableList();
     formEdit();
     historyNav();
 };
@@ -95,9 +92,9 @@ window.addEventListener("popstate", async e => {
         document.title = doc.title;
         document.querySelector("main").innerHTML = doc.querySelector("main").innerHTML;
 
-        scriptUpdate();
+        await scriptUpdate();
     } else {
-        console.error("Failed to load the page.");
+        drawError("Failed to load the page.");
     }
 });
 
@@ -114,18 +111,26 @@ const availableList = async (doc = document) => {
 
     const dir = "/pensums/";
     const list = await importJSON(dir + "list.json");
+    if (list.length == 0) {
+        drawError("Listado de Pensums no cargado");
+        return;
+    }
 
     list["listado"].forEach(async item => {
         const element = addListElement(item, "/icons/article.svg", "#" + item);
         available.appendChild(element);
         element.addEventListener("click", async e => {
-            const list = await filterJSON(await importJSON(dir + item + ".json"));
+            const pensum = await filterJSON(await importJSON(dir + item + ".json"));
+            if (pensum.length == 0) {
+                drawError(`Pensum ${item} no cargado`);
+                return;
+            }
 
             actualPensum.selectionMode = 0;
 
             await drawAside("/view.html");
 
-            drawPensumTable(list);
+            drawPensumTable(pensum);
 
             initCanvas();
 
@@ -169,40 +174,52 @@ const formEdit = (doc = document) => {
             });
         });
     }
+    const assignCreate = () => {
+        const nameElement = form.querySelector("#career");
+        let name = nameElement.value;
+        if (name == "") {
+            nameElement.classList.add("needed");
+            nameElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+            return false;
+        }
+        actualPensum.career = name;
 
+        actualPensum.faculty = form.querySelector("#faculty").value;
+        actualPensum.description = form.querySelector("#description").value;
+        if (form.querySelector("#term")) actualPensum.terms = parseInt(form.querySelector("#term").value);
+        const termName = form.querySelector("#termName").value.split(",");
+        if (termName == "custom") actualPensum.termName = [form.querySelector("#termName0").value, form.querySelector("#termName1").value];
+        else actualPensum.termName = [termName[0], termName[1]];
+
+        actualPensum.selectionMode = 3;
+
+        actualPensum.linkName = "Nuevo";
+        return true;
+    };
+
+    // edit pensum
+    const edit = form.querySelector("button#edit");
+    if (edit)
+        edit.addEventListener("click", async e => {
+            assignCreate();
+            drawPensumTable(actualPensum)
+        });
     // create pensum
     const create = form.querySelector("button#create");
     if (create) {
         create.addEventListener("click", async e => {
             actualPensum = PensumFormat;
-            const nameElement = form.querySelector("#career");
-            let name = nameElement.value;
-            if (name == "") {
-                nameElement.classList.add("needed");
-                nameElement.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                });
-                return;
-            }
-            actualPensum.career = name;
-
-            actualPensum.faculty = form.querySelector("#faculty").value;
-            actualPensum.description = form.querySelector("#description").value;
-            actualPensum.terms = parseInt(form.querySelector("#term").value);
-            const termName = form.querySelector("#termName").value.split(",");
-            if (termName == "custom") actualPensum.termName = [form.querySelector("#termName0").value, form.querySelector("#termName1").value];
-            else actualPensum.termName = [termName[0], termName[1]];
-
-            actualPensum.selectionMode = 3;
-
-            actualPensum.linkName = "Nuevo";
+            if (!assignCreate()) return;
 
             actualPensum.coursesByTerm = Array.from({length: actualPensum.terms}, () => []);
 
             await drawAside("/create.html");
 
             drawPensumTable(actualPensum);
+            initCanvas()
         });
     }
 };
