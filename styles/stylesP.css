@@ -3,6 +3,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: Montserrat, Ubuntu, Arial, Helvetica, sans-serif;
+    /* outline: red solid 1px; */
 }
 
 :root {
@@ -105,14 +106,20 @@
 }
 
 body {
-    min-height: 100vh;
-    min-width: 100vw;
-    /* width:100vw; */
     display: flex;
-    justify-content: center;
+    align-items: stretch;
     background: var(--neutral-10);
+    position: relative;
+}
+
+.container {
+    position: relative;
     overflow: auto;
-    position: absolute;
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    /* overflow-y: scroll; */
+    /* min-width: 100cqh; */
 }
 
 /* load */
@@ -300,8 +307,8 @@ nav img {
 
 article.pensum {
     display: flex;
-    min-width: 100vw;
-    min-height: 100vh;
+    height: auto;
+    z-index: 1001;
 }
 
 article.pensum ul.term {
@@ -313,7 +320,7 @@ article.pensum ul.term {
 
 article.pensum ul.term li {
     min-width: 13em;
-    min-height: 4em;
+    /* min-height: 4em; */
     cursor: pointer;
     user-select: none;
     margin: 0.5em 0;
@@ -325,9 +332,7 @@ article.pensum ul.term li {
     justify-content: center;
     text-align: center;
     align-items: center;
-}
-
-article.pensum ul.term li {
+    max-width: 100%;
     background: var(--neutral-90);
     color: var(--neutral-10);
     position: relative;
@@ -337,7 +342,6 @@ article.pensum ul.term li {
 article.pensum ul.term li.term {
     background: var(--colorA-50);
     color: var(--neutral-10);
-    min-height: 2em;
 }
 
 article.pensum ul.term li.term p {
@@ -428,13 +432,13 @@ article.pensum.selection ul.term li.sel-act {
     opacity: 1;
 }
 
-article.pensum.selection ul.term li.sel-act.coreq:hover {
+article.pensum.selection ul.term li.sel-act.coreq {
     background: var(--colorE-70);
 }
-article.pensum.selection ul.term li.sel-act.prereq:hover {
+article.pensum.selection ul.term li.sel-act.prereq {
     background: var(--colorD-70);
 }
-article.pensum.selection ul.term li.sel-act.required:hover {
+article.pensum.selection ul.term li.sel-act.required {
     background: var(--colorA-80);
 }
 
@@ -473,10 +477,8 @@ canvas.arrow {
     top: 0;
     left: 0;
     z-index: 1000;
-}
-
-article.pensum {
-    z-index: 1001;
+    /* width: 100%;
+    height: 100%; */
 }
 
 /* Aside */
@@ -485,8 +487,8 @@ aside {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: auto;
-    padding: 1em;
+    /* height: 100vh; */
+    padding: .2em;
     background: var(--neutral-20);
     color: var(--foreground);
     z-index: 1002;
@@ -517,6 +519,10 @@ aside ul li {
     color: var(--foreground);
     cursor: pointer;
     transition: 0.1s ease-out;
+    display: flex;
+}
+
+aside ul li a {
     display: flex;
 }
 
@@ -852,4 +858,13 @@ article.pensum ul.add {
 article.pensum ul.add:hover {
     opacity: 1;
     transition: 0.2s ease-in;
+}
+
+/* responsive forced again*/
+
+@media (orientation: portrait) {
+    body div.container > * {
+        transform-origin: top left;
+        transform: scale(.5);
+    }
 }

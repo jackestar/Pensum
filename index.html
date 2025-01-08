@@ -9,6 +9,14 @@
         <link rel="prefetch" href="./view.html" as="document" />
         <script async type="module" src="./JS/pdf.mjs"></script>
         <link rel="prefetch" href="./JS/pdf.worker.mjs" as="script" />
+        <link rel="manifest" href="./pensum.json" />
+        <meta property="og:image" content="./manifest/banner.png">
+        <meta property="og:title" content="Pensum (UNEFA Electronica)">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="661">
+        <meta property="og:image:height" content="661">
+        <meta property="og:description" content="Visualizador/Generador de Pensum">
+        <meta name="description" content="Visualizador/Generador de Pensum">
         <title>Pensum Generator</title>
         <style>
             main {
@@ -35,10 +43,10 @@
                             <img src="./icons/file_open.svg" />
                             <h3>Abrir Pensum</h3>
                         </div>
-                        <div data-url="./view.html#import">
+                        <!-- <div data-url="./view.html#import">
                             <img src="./icons/open.svg" />
                             <h3>Importar Record</h3>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="generate">
                         <h2>Generar</h2>
@@ -67,7 +75,9 @@
                 </section>
             </div>
         </main>
-        <canvas class="arrow"></canvas>
+        <div class="container">
+            <canvas class="arrow"></canvas>
+        </div>
         <script src="./JS/pensum.js"></script>
         <script src="./JS/load.js"></script>
         <script>

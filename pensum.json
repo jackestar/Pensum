@@ -4,9 +4,9 @@
     "short_name":"Pensum Generador",
     "background_color": "#2c292d",
     "display":"standalone",
-    "theme_color": "#FF144E",
+    "theme_color": "#d80067",
     "start_url":"./Pensum.html",
-    "description":"Generador de arbol de prelaciones de pensum",
+    "description":"Visualizador/Generador de Pensum",
     "icons":[
         {
             "src":"manifest/48.png",

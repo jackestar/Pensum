@@ -49,6 +49,11 @@ const PensumFormat = {
                     this.courses.splice(index, 1);
                 }
             });
+            if (term < this.terms)
+                this.coursesByTerm
+                    .slice(-this.terms + term)
+                    .flat()
+                    .forEach(course => course.term--);
             this.coursesByTerm.splice(term - 1, 1);
             this.terms--;
         }
@@ -108,7 +113,7 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
 
     pensum.courses = pensum.courses.map((course, index) => {
         pensum.totalCredits += course.credits;
-        course = courseFilter(course);
+        // course = courseFilter(course);
         let sem = course.term - 1;
         course.passed = false;
         course.required = course.required ? course.required : [];
@@ -188,7 +193,7 @@ const addListElement = (name, icon, url) => {
 
     div.appendChild(img);
     div.appendChild(h3);
-    div.addEventListener("click", e => history.pushState({}, "", url));
+    // div.addEventListener("click", e => history.pushState({}, "", url));
     return div;
 };
 
@@ -259,7 +264,7 @@ const createPensumTable = pensum => {
                 edit.classList.add("edit");
                 const editIcon = document.createElement("img");
                 editIcon.src = "/icons/edit_square.svg";
-                // edit.addEventListener("click", e => editAction(course.index));
+                edit.addEventListener("click", e => editCourseAction(course));
                 edit.appendChild(editIcon);
 
                 const del = document.createElement("div");
@@ -334,7 +339,7 @@ const drawPensumTable = list => {
     actualPensum.element = pensumTable;
 
     main.classList.remove("show");
-    document.body.appendChild(pensumTable);
+    document.querySelector(".container").appendChild(pensumTable);
     actualPensum.em = parseInt(window.getComputedStyle(document.querySelector("article.pensum ul")).padding.slice(0, -2));
 
     actualPensum.courses.forEach(course => {
@@ -388,6 +393,10 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
         doc.querySelector(".importRecord").addEventListener("click", e => {
             importRecord();
         });
+
+        // doc.querySelector(".importPensum").addEventListener("click", e => {
+        //     importPensum();
+        // });
 
         asideUpdate(doc);
 
@@ -719,9 +728,8 @@ const infoAction = index => {
     document.body.appendChild(info);
 };
 
-const addCourseAction = (term = actualPensum.terms) => {
-    const newCourse = structuredClone(courseFormat);
-    newCourse.required = [];
+const drawCourseBanner = (newCourse, submitAction) => {
+    term = newCourse.term;
     const Old = document.querySelector(".banner");
     if (Old) infoOld.remove();
     const addBanner = document.createElement("div");
@@ -737,20 +745,22 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "code",
             type: "text",
             placeholder: "Código del Curso",
+            value: newCourse.code,
         },
         {
             label: "name",
             name: "name",
             type: "text",
             placeholder: "Nombre del Curso",
+            value: newCourse.name,
         },
         {
             label: "Créditos",
             name: "credits",
             type: "number",
             placeholder: "Créditos del Curso",
-            value: 0,
             min: 0,
+            value: newCourse.credits,
         },
         {
             label: "Termino",
@@ -765,13 +775,14 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "description",
             type: "textarea",
             placeholder: "Descripción del Curso",
+            value: newCourse.description,
         },
         {
             label: "Créditos Requeridos",
             name: "careerRequirementCredits",
             type: "number",
             placeholder: "Créditos Requeridos",
-            value: 0,
+            value: newCourse.careerRequirement[0],
             min: 0,
             subType: true,
         },
@@ -780,7 +791,7 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "careerRequirementTerm",
             type: "number",
             placeholder: "Termino Requerido",
-            value: 0,
+            value: newCourse.careerRequirement[1],
             min: 0,
         },
     ];
@@ -790,7 +801,7 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "hoursTheory",
             type: "number",
             placeholder: "Horas de Teoría",
-            value: 0,
+            value: newCourse.hours[0],
             min: 0,
         },
         {
@@ -798,7 +809,7 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "hoursPractice",
             type: "number",
             placeholder: "Horas de Práctica",
-            value: 0,
+            value: newCourse.hours[1],
             min: 0,
             subType: true,
         },
@@ -807,7 +818,7 @@ const addCourseAction = (term = actualPensum.terms) => {
             name: "hoursLab",
             type: "number",
             placeholder: "Horas de Laboratorio",
-            value: 0,
+            value: newCourse.hours[2],
             min: 0,
             subType: true,
         },
@@ -831,7 +842,7 @@ const addCourseAction = (term = actualPensum.terms) => {
         input.setAttribute("name", field.name);
         input.setAttribute("id", field.name);
         input.setAttribute("placeholder", field.placeholder);
-        if (field.value != undefined) input.setAttribute("value", field.value);
+        if (field.value != undefined) input.value = field.value;
         if (field.min != undefined) input.setAttribute("min", field.min);
 
         div.appendChild(label);
@@ -956,29 +967,9 @@ const addCourseAction = (term = actualPensum.terms) => {
 
     submitDiv.appendChild(submitButton);
     form.appendChild(submitDiv);
-
     form.addEventListener("submit", e => {
         e.preventDefault();
-        const existingCourse = actualPensum.courses.find(course => course.code === form.code.value);
-
-        if (existingCourse || form.code.value == "") {
-            form.code.classList.add("needed");
-            form.code.scrollIntoView({behavior: "smooth", block: "center"});
-            return;
-        } else {
-            form.code.classList.remove("needed");
-        }
-        newCourse.code = form.code.value;
-        newCourse.name = form.name.value;
-        newCourse.credits = parseInt(form.credits.value);
-        newCourse.term = parseInt(form.term.value);
-        newCourse.description = form.description.value;
-        newCourse.careerRequirement = [parseInt(form.careerRequirementCredits.value), parseInt(form.careerRequirementTerm.value)];
-
-        newCourse.available = false;
-
-        actualPensum.addCourse(newCourse);
-        drawPensumTable(actualPensum);
+        if (!submitAction(newCourse, form, addBanner)) return;
         addBanner.remove();
     });
 
@@ -987,7 +978,113 @@ const addCourseAction = (term = actualPensum.terms) => {
     document.body.appendChild(addBanner);
 };
 
-const openAction = () => {};
+const highlightField = (fromFields, condition = true) => {
+    if (condition) {
+        fromFields.classList.add("needed");
+        fromFields.scrollIntoView({behavior: "smooth", block: "center"});
+        return true;
+    } else fromFields.classList.remove("needed");
+    return false;
+};
+
+const addCourseAction = (term = actualPensum.terms) => {
+    const newCourse = structuredClone(courseFormat);
+    newCourse.required = [];
+    newCourse.term = term;
+    const submitAction = (newCourse, form) => {
+        let existingCourse = false;
+        if (form.code.value) existingCourse = actualPensum.courses.find(course => course.code === form.code.value);
+
+        if (highlightField(form.name, existingCourse || form.name.value == "")) return false;
+        if (highlightField(form.term, form.term.value > actualPensum.terms)) return false;
+
+        newCourse.code = form.code.value;
+        newCourse.name = form.name.value;
+        newCourse.credits = parseInt(form.credits.value);
+        newCourse.term = parseInt(form.term.value);
+        newCourse.description = form.description.value;
+        newCourse.careerRequirement = [parseInt(form.careerRequirementCredits.value), parseInt(form.careerRequirementTerm.value)];
+        newCourse.hours[0] = parseInt(form.hoursTheory.value);
+        newCourse.hours[1] = parseInt(form.hoursPractice.value);
+        newCourse.hours[2] = parseInt(form.hoursLab.value);
+
+        newCourse.available = false;
+
+        actualPensum.addCourse(newCourse);
+        drawPensumTable(actualPensum);
+        return true;
+    };
+    drawCourseBanner(newCourse, submitAction);
+};
+
+const editCourseAction = newCourse => {
+    // newCourse.term = term
+    const submitAction = (newCourse, form) => {
+        if (highlightField(form.name, form.name.value == "")) return false;
+
+        newCourse.code = form.code.value;
+        newCourse.name = form.name.value;
+        newCourse.credits = parseInt(form.credits.value);
+        newCourse.term = parseInt(form.term.value);
+        newCourse.description = form.description.value;
+        newCourse.careerRequirement = [parseInt(form.careerRequirementCredits.value), parseInt(form.careerRequirementTerm.value)];
+        newCourse.hours[0] = parseInt(form.hoursTheory.value);
+        newCourse.hours[1] = parseInt(form.hoursPractice.value);
+        newCourse.hours[2] = parseInt(form.hoursLab.value);
+
+        newCourse.available = false;
+
+        // actualPensum.addCourse(newCourse);
+        console.log(newCourse);
+        drawPensumTable(actualPensum);
+        return true;
+    };
+    drawCourseBanner(newCourse, submitAction);
+};
+const importPensum = () => {
+    const importPensumAction = (file) => {
+        const reader = new FileReader();
+    reader.addEventListener("load", e => {
+        drawPensumFromJson(JSON.parse(e.target.result),"imported")
+    });
+    reader.readAsText(file);
+    }
+    openAction(".json,.txt",importPensumAction)
+};
+const openAction = (accept, action) => {
+    // <input type="file" id="archivoInput" style="display: none;" accept=".txt,.pdf,.csv"></input>
+    const input = document.createElement("input");
+    input.type = "file";
+    input.style.display = "none";
+    input.accept = accept;
+    input.addEventListener("change", e => {
+        action(input.files[0])
+    });
+    document.body.appendChild(input)
+    console.log(input)
+    input.click();
+    // a =input
+    input.remove()
+};
+
+const openRecordAction = file => {
+    const reader = new FileReader();
+    reader.addEventListener("load", e => {
+        // 28 is "data:application/pdf;base64,"
+        const file = atob(reader.result.slice(28));
+
+        if (typeof pdfjsLib == "undefined")
+            // Error Handle (info Handle)
+            drawError("Cargando pdf handler");
+        else {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/JS/pdf.worker.mjs";
+            extractText(file).then(text => {
+                readRecord(text);
+            });
+        }
+    });
+    reader.readAsDataURL(file);
+};
 
 const importRecord = () => {
     const Old = document.querySelector(".banner");
@@ -1009,6 +1106,10 @@ const importRecord = () => {
     p.textContent = "o Suelta el PDF";
     box.appendChild(h4);
     box.appendChild(p);
+    box.addEventListener("click", e => {
+        openAction(".pdf", openRecordAction)
+        document.querySelector(".importBanner").remove()
+    });
 
     cont.appendChild(box);
     importBanner.appendChild(cont);
@@ -1029,23 +1130,7 @@ const importRecord = () => {
         const files = [...ev.dataTransfer.items].filter(e => e.kind == "file" && e.type == "application/pdf").map(file => file.getAsFile());
         if (files.length) {
             // multiple file handle
-
-            const reader = new FileReader();
-            reader.addEventListener("load", e => {
-                // 28 is "data:application/pdf;base64,"
-                const file = atob(reader.result.slice(28));
-
-                if (typeof pdfjsLib == "undefined")
-                    // Error Handle (info Handle)
-                    drawError("Cargando pdf handler");
-                else {
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = "/JS/pdf.worker.mjs";
-                    extractText(file).then(text => {
-                        readRecord(text);
-                    });
-                }
-            });
-            reader.readAsDataURL(files[0]);
+            openRecordAction(files[0]);
             importBanner.remove();
         } else {
             // Error Handle

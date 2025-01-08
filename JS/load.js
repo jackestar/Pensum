@@ -22,7 +22,7 @@ const historyNav = () => {
                 const doc = parser.parseFromString(newContent, "text/html");
 
                 // Update the content
-                await availableList(doc);
+                // await availableList(doc);
 
                 // Replace the content
                 document.title = doc.title;
@@ -98,6 +98,24 @@ window.addEventListener("popstate", async e => {
     }
 });
 
+const drawPensumFromJson = async (json,linkname) => {
+    const pensum = await filterJSON(json);
+    if (pensum.length == 0) {
+        drawError(`Pensum ${item} no cargado`);
+        return;
+    }
+
+    actualPensum.selectionMode = 0;
+
+    await drawAside("/view.html");
+
+    drawPensumTable(pensum);
+
+    initCanvas();
+
+    actualPensum.linkName = linkname;
+}
+
 const availableList = async (doc = document) => {
     const available = doc.querySelector(".available");
     if (!available) return;
@@ -108,7 +126,6 @@ const availableList = async (doc = document) => {
     h2.textContent = "Pensum disponibles";
 
     available.appendChild(h2);
-
     const dir = "/pensums/";
     const list = await importJSON(dir + "list.json");
     if (list.length == 0) {
@@ -120,21 +137,9 @@ const availableList = async (doc = document) => {
         const element = addListElement(item, "/icons/article.svg", "#" + item);
         available.appendChild(element);
         element.addEventListener("click", async e => {
-            const pensum = await filterJSON(await importJSON(dir + item + ".json"));
-            if (pensum.length == 0) {
-                drawError(`Pensum ${item} no cargado`);
-                return;
-            }
-
-            actualPensum.selectionMode = 0;
-
-            await drawAside("/view.html");
-
-            drawPensumTable(pensum);
-
-            initCanvas();
-
-            actualPensum.linkName = item;
+            
+            drawPensumFromJson(await importJSON(dir + item + ".json"),item)
+            
         });
     });
 
@@ -205,7 +210,7 @@ const formEdit = (doc = document) => {
     if (edit)
         edit.addEventListener("click", async e => {
             assignCreate();
-            drawPensumTable(actualPensum)
+            drawPensumTable(actualPensum);
         });
     // create pensum
     const create = form.querySelector("button#create");
@@ -219,7 +224,7 @@ const formEdit = (doc = document) => {
             await drawAside("/create.html");
 
             drawPensumTable(actualPensum);
-            initCanvas()
+            initCanvas();
         });
     }
 };
