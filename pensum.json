@@ -5,7 +5,7 @@
     "background_color": "#2c292d",
     "display":"standalone",
     "theme_color": "#d80067",
-    "start_url":"./Pensum.html",
+    "start_url":"/",
     "description":"Visualizador/Generador de Pensum",
     "icons":[
         {
