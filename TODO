@@ -1,0 +1,33 @@
+# TODO
+
+*Alpha are minimum requirements to exit this state of development.*
+
+*Beta are minimum requirements to launch a release.*
+
+## General
+
+* import JSON
+* minify (beta)
+* better readme (beta)
+* update opengraph/ PWA manifest (beta)
+* find other (more light pdf reader)
+* license
+* other pensums
+* doc (beta)
+* quick guide (beta)
+* binary builder (Android/Linux/Windows maybe with Tauri)
+* light/dark mode
+* fix zoom of container
+* multilang support
+
+
+## Edit Mode
+
+* edit already created course (alpha)
+* merge create and edit description (beta)
+* back button
+* do undo (may not)
+
+## Import/Export
+
+* import json file (alpha)

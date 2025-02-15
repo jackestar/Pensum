@@ -11,11 +11,15 @@ Super lightweight Pensum generator/organizer/visualizer made from scratch
 Create a curriculum (study plan) generator that allows users to design a curriculum with a prerequisite system, enabling end-users to interactively visualize the subjects/courses.
 Import and export the pensum in json format, as well as the student's academic record
 
-### [Test Deploy](https://pensumjs.netlify.app/pensum.html)
+### [TODO](./TODO)
+
+### Actual State: *Alfa*
+
+### [Official Page](https://pensumjs.netlify.app/pensum.html)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/051897ef-5077-45d1-99b2-7ca4d427c5a2/deploy-status)](https://app.netlify.com/sites/pensumjs/deploys)
 
-### [Official Page](https://jackestar.netlify.app/proyects/pensum/pensum.html)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/74b08afd-bbd2-424c-b0c2-0dfa1dc0896e/deploy-status)](https://app.netlify.com/sites/jackestar/deploys)
+### [Test Deploy](https://pensumjs.netlify.app/pensum.html)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/051897ef-5077-45d1-99b2-7ca4d427c5a2/deploy-status?branch=develop)](https://app.netlify.com/sites/pensumjs/deploys)
 
 ## Copyright
 
