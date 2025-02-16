@@ -1,6 +1,6 @@
 // Register service worker
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./offline-worker.js');
+    navigator.serviceWorker.register('/JS/offline-worker.js');
 }
 
 const historyNav = () => {
