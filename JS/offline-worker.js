@@ -1,5 +1,5 @@
 // Cache resources
-const CACHE_NAME = 'PWA-cache';
+const CACHE_NAME = "PWA-cache";
 const urlsToCache = [
     "/",
     "/favicon.svg",
@@ -41,42 +41,47 @@ const urlsToCache = [
     "/JS/offline-worker.js",
     "/JS/load.js",
     "/JS/pensum.js",
-    "/aside.html"
+    "/aside.html",
 ];
 
 // Instalar el Service Worker y cachear los recursos
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Archivos cacheados');
-      return cache.addAll(urlsToCache);
-    })
-  );
+self.addEventListener("install", event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => {
+            console.log("Archivos cacheados");
+            return cache.addAll(urlsToCache);
+        })
+    );
 });
 
 // Interceptar las solicitudes y responder desde el cache
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Devuelve el recurso del cache si existe, si no, sigue la solicitud normal
-      return response || fetch(event.request);
-    })
-  );
+self.addEventListener("fetch", event => {
+    event.respondWith(
+        caches.match(event.request).then(response => {
+            // Devuelve el recurso del cache si existe, si no, sigue la solicitud normal
+            return response || fetch(event.request).then(response => {
+                return caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, response.clone());
+                    return response;
+                });
+            });
+        })
+    );
 });
 
 // Actualizar el cache cuando cambien los archivos
-self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (!cacheWhitelist.includes(cacheName)) {
-            console.log('Cache viejo eliminado:', cacheName);
-            return caches.delete(cacheName);
-          }
+self.addEventListener("activate", event => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (!cacheWhitelist.includes(cacheName)) {
+                        console.log("Cache viejo eliminado:", cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
         })
-      );
-    })
-  );
+    );
 });
