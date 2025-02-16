@@ -5,11 +5,14 @@ const urlsToCache = [
     "/favicon.svg",
     "/pensum.json",
     "/create.html",
+    "/create",
     "/styles/stylesP.css",
     "/pensums/list.json",
     "/pensums/electronica.json",
     "/view.html",
+    "/view",
     "/index.html",
+    "/index",
     "/icons/edit_square.svg",
     "/icons/light_mode.svg",
     "/icons/dark_mode.svg",
@@ -41,25 +44,39 @@ const urlsToCache = [
     "/aside.html"
 ];
 
-self.addEventListener('install', event => {
+// Instalar el Service Worker y cachear los recursos
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Archivos cacheados');
+      return cache.addAll(urlsToCache);
+    })
   );
 });
 
-// Handle offline requests
-self.addEventListener('fetch', event => {
+// Interceptar las solicitudes y responder desde el cache
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
+    caches.match(event.request).then((response) => {
+      // Devuelve el recurso del cache si existe, si no, sigue la solicitud normal
+      return response || fetch(event.request);
+    })
+  );
+});
 
-        return fetch(event.request);
-      })
+// Actualizar el cache cuando cambien los archivos
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (!cacheWhitelist.includes(cacheName)) {
+            console.log('Cache viejo eliminado:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
