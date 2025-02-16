@@ -1,3 +1,8 @@
+// Register service worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./offline-worker.js');
+}
+
 const historyNav = () => {
     document.querySelectorAll("[data-url]").forEach(button => {
         button.addEventListener("click", async e => {

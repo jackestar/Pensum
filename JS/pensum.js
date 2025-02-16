@@ -394,10 +394,6 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
             importRecord();
         });
 
-        // doc.querySelector(".importPensum").addEventListener("click", e => {
-        //     importPensum();
-        // });
-
         asideUpdate(doc);
 
         // Replace the content
@@ -1042,14 +1038,14 @@ const editCourseAction = newCourse => {
     drawCourseBanner(newCourse, submitAction);
 };
 const importPensum = () => {
-    const importPensumAction = (file) => {
+    const importPensumAction = file => {
         const reader = new FileReader();
-    reader.addEventListener("load", e => {
-        drawPensumFromJson(JSON.parse(e.target.result),"imported")
-    });
-    reader.readAsText(file);
-    }
-    openAction(".json,.txt",importPensumAction)
+        reader.addEventListener("load", e => {
+            drawPensumFromJson(JSON.parse(e.target.result), "imported");
+        });
+        reader.readAsText(file);
+    };
+    openAction(".json,.txt", importPensumAction);
 };
 const openAction = (accept, action) => {
     // <input type="file" id="archivoInput" style="display: none;" accept=".txt,.pdf,.csv"></input>
@@ -1058,13 +1054,13 @@ const openAction = (accept, action) => {
     input.style.display = "none";
     input.accept = accept;
     input.addEventListener("change", e => {
-        action(input.files[0])
+        action(input.files[0]);
     });
-    document.body.appendChild(input)
-    console.log(input)
+    document.body.appendChild(input);
+    console.log(input);
     input.click();
     // a =input
-    input.remove()
+    input.remove();
 };
 
 const openRecordAction = file => {
@@ -1107,8 +1103,8 @@ const importRecord = () => {
     box.appendChild(h4);
     box.appendChild(p);
     box.addEventListener("click", e => {
-        openAction(".pdf", openRecordAction)
-        document.querySelector(".importBanner").remove()
+        openAction(".pdf", openRecordAction);
+        document.querySelector(".importBanner").remove();
     });
 
     cont.appendChild(box);
@@ -1180,19 +1176,23 @@ const readRecord = texto => {
     let contenido = [];
     contenido = texto.split(new RegExp("[0-9PIV]-[0-9]{4} "));
     contenido.shift(); // Delete header
-    contenido = contenido.filter(e => {
-        return !e.includes("APROBÓ") && !e.includes("REPROBÓ");
-    });
+    contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
+
     contenido.forEach((e, i) => {
         // I dont know if realy necessary... but
         if (e.includes("Índice")) e = e.substr(0, e.indexOf("Índice"));
         if (e.includes("REPARACIÓN")) e = e.substr(0, e.indexOf("REPARACIÓN"));
+        if (e.includes("- VA")) e = e.substr(0, e.indexOf("- VA"));
 
-        let courseRecord = e.split(new RegExp("^(0[0-9])+? | [A-Z ÁÉÍÓÚÑ(),]{4,} ")).filter(e => {
-            return e != undefined && e != "";
-        });
+        let courseRecord = e
+            .split(new RegExp("^(0[0-9])+? | [A-Z ÁÉÍÓÚÑ(),]{4,} "))
+            .filter(e => e != undefined && e != "")
+            .slice(0, 3);
+        // courseRecord.forEach(console.log)
         // ["term", "code", "Calif. U.C Puntos"
         // Calif. x U.C = Puntos
+
+        // Assingment
 
         if (courseRecord[2][0] != "0") {
             for (let h = 0; h < codes.length; h++) {

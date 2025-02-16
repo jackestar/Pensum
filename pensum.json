@@ -1,32 +1,54 @@
 {
-    "name":"Pensum Generador",
+    "name": "Pensum Generador",
     "lang": "es",
-    "short_name":"Pensum Generador",
+    "short_name": "Pensum Generador",
     "background_color": "#2c292d",
-    "display":"standalone",
+    "display": "standalone",
     "theme_color": "#d80067",
-    "start_url":"/",
-    "description":"Visualizador/Generador de Pensum",
-    "icons":[
+    "start_url": "/",
+    "description": "Visualizador/Generador de Pensum",
+    "icons": [
         {
-            "src":"manifest/48.png",
-            "sizes":"48x48",
-            "purpose":"any"
+            "src": "manifest/48.png",
+            "sizes": "48x48",
+            "purpose": "any"
         },
         {
-            "src":"manifest/72.png",
-            "sizes":"72x72",
-            "purpose":"any"
+            "src": "manifest/72.png",
+            "sizes": "72x72",
+            "purpose": "any"
         },
         {
-            "src":"manifest/256.png",
-            "sizes":"256x256",
-            "purpose":"any"
+            "src": "manifest/256.png",
+            "sizes": "256x256",
+            "purpose": "any"
         },
         {
-            "src":"manifest/512.png",
-            "sizes":"512x512",
-            "purpose":"any"
+            "src": "manifest/512.png",
+            "sizes": "512x512",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name":"Ver Pensum",
+            "description":"Abrir Pensum existente",
+            "url":"view",
+            "icons":[
+                {
+                    "src":"icons/article.svg"
+                }
+            ]
+        },
+        {
+            "name":"Crear",
+            "description":"Crear un nuevo Pensum",
+            "url":"create",
+            "icons":[
+                {
+                    "src":"icons/new_window.svg"
+                }
+            ]
         }
     ]
 }
