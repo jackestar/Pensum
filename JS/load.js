@@ -1,14 +1,12 @@
-if ('serviceWorker' in navigator) {
+const JSONdir = "/pensums/";
+let JSONlist = [];
+
+if ("serviceWorker" in navigator) {
     navigator.serviceWorker
-      .register('/JS/offline-worker.js')
-      .then((reg) => {
-        console.log('Service Worker registrado con éxito:', reg.scope);
-      })
-      .catch((err) => {
-        console.error('Error al registrar el Service Worker:', err);
-      });
-  }
-  
+        .register("/JS/offline-worker.js")
+        .then(reg => console.log("Service Worker registered", reg.scope))
+        .catch(err => drawError(`Error al registrar el Service Worker: ${err}`));
+}
 
 const historyNav = () => {
     document.querySelectorAll("[data-url]").forEach(button => {
@@ -110,12 +108,14 @@ window.addEventListener("popstate", async e => {
     }
 });
 
-const drawPensumFromJson = async (json,linkname) => {
+const drawPensumFromJson = async (json, linkname) => {
     const pensum = await filterJSON(json);
     if (pensum.length == 0) {
         drawError(`Pensum ${item} no cargado`);
         return;
     }
+
+    actualPensum.linkName = linkname;
 
     actualPensum.selectionMode = 0;
 
@@ -124,9 +124,7 @@ const drawPensumFromJson = async (json,linkname) => {
     drawPensumTable(pensum);
 
     initCanvas();
-
-    actualPensum.linkName = linkname;
-}
+};
 
 const availableList = async (doc = document) => {
     const available = doc.querySelector(".available");
@@ -138,25 +136,22 @@ const availableList = async (doc = document) => {
     h2.textContent = "Pensum disponibles";
 
     available.appendChild(h2);
-    const dir = "/pensums/";
-    const list = await importJSON(dir + "list.json");
-    if (list.length == 0) {
+    JSONlist = await importJSON(JSONdir + "list.json");
+    if (JSONlist.length == 0) {
         drawError("Listado de Pensums no cargado");
         return;
     }
 
-    list["listado"].forEach(async item => {
-        const element = addListElement(item, "/icons/article.svg", "#" + item);
+    JSONlist["Career"].forEach(async item => {
+        const element = addListElement(item[1], "/icons/article.svg", "#" + item[0]);
         available.appendChild(element);
         element.addEventListener("click", async e => {
-            
-            drawPensumFromJson(await importJSON(dir + item + ".json"),item)
-            
+            drawPensumFromJson(await importJSON(JSONdir + item[0] + ".json"), item);
         });
     });
 
     if (actualPensum.linkName) {
-        const elementBack = addListElement(`Volver (${actualPensum.linkName})`, "/icons/arrow_back.svg", "#" + actualPensum.linkName + "?back");
+        const elementBack = addListElement(`Volver (${actualPensum.linkName[1]})`, "/icons/arrow_back.svg", "#" + actualPensum.linkName[0] + "?back");
         elementBack.classList.add("back");
         available.appendChild(elementBack);
     }
@@ -222,20 +217,20 @@ const formEdit = (doc = document) => {
     if (edit)
         edit.addEventListener("click", async e => {
             assignCreate();
-            drawPensumTable(actualPensum);
+            drawPensumTable();
         });
     // create pensum
     const create = form.querySelector("button#create");
     if (create) {
         create.addEventListener("click", async e => {
-            actualPensum = PensumFormat;
+            actualPensum = Object.create(PensumFormat);
             if (!assignCreate()) return;
 
             actualPensum.coursesByTerm = Array.from({length: actualPensum.terms}, () => []);
 
             await drawAside("/create.html");
 
-            drawPensumTable(actualPensum);
+            drawPensumTable();
             initCanvas();
         });
     }

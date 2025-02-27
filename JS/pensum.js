@@ -61,6 +61,7 @@ const PensumFormat = {
 };
 
 let actualPensum = Object.create(PensumFormat);
+// const actualPensum = Object.create(PensumFormat);
 // Selection Mode
 // 0 - Star
 // 1 - Path
@@ -80,7 +81,7 @@ const importJSON = async url => {
 };
 const filter = (object, filterObject) => {
     const objectKeys = Object.keys(filterObject).filter(key => typeof filterObject[key] !== "function");
-    filtered = {};
+    const filtered = Object.create(filterObject);
     objectKeys.forEach(key => {
         if (object.hasOwnProperty(key)) {
             filtered[key] = object[key];
@@ -88,9 +89,11 @@ const filter = (object, filterObject) => {
     });
     return filtered;
 };
+
 const courseFilter = (course, courseF = courseFormat) => {
     return filter(course, courseF);
 };
+
 const formatFilter = (pensum, pensumF = PensumFormat) => {
     return filter(pensum, pensumF);
 };
@@ -116,12 +119,11 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
         // course = courseFilter(course);
         let sem = course.term - 1;
         course.passed = false;
-        course.required = course.required ? course.required : [];
-        course.corequired = course.corequired ? course.corequired : [];
+        course.required ||= [];
+        course.corequired ||= [];
+        course.readonly ||= false;
         if (sem) course.available = false;
-        if (!course.prerequisites.length) {
-            course.available = true;
-        }
+        if (!course.prerequisites.length) course.available = true;
         if (course.corequisites.length) {
             course.corequisites.forEach((corequisite, index) => {
                 const co = pensum.courses.find(c => c.code === corequisite);
@@ -198,7 +200,11 @@ const addListElement = (name, icon, url) => {
 };
 
 const createPensumTable = pensum => {
-    actualPensum = pensum;
+    if (pensum != "") {
+        actualPensum = pensum;
+    } else {
+        pensum = actualPensum;
+    }
     terms = pensum.terms;
 
     const article = document.createElement("article");
@@ -232,7 +238,7 @@ const createPensumTable = pensum => {
             delIcon.src = "/icons/delete.svg";
             del.addEventListener("click", e => {
                 actualPensum.removeTerm(term + 1);
-                drawPensumTable(actualPensum);
+                drawPensumTable();
             });
             del.appendChild(delIcon);
 
@@ -246,9 +252,7 @@ const createPensumTable = pensum => {
 
         actualPensum.coursesByTerm[term].forEach(course => {
             const li = document.createElement("li");
-            li.addEventListener("click", e => {
-                if (!course.readonly) actualPensum.elementSelected = elementAction(li, pensum.courses.indexOf(course));
-            });
+            li.addEventListener("click", e => (actualPensum.elementSelected = elementAction(li, pensum.courses.indexOf(course))));
 
             const h3 = document.createElement("h3");
             h3.textContent = course.name;
@@ -273,7 +277,7 @@ const createPensumTable = pensum => {
                 delIcon.src = "/icons/delete.svg";
                 del.addEventListener("click", e => {
                     actualPensum.removeCourse(pensum.courses.indexOf(course));
-                    drawPensumTable(actualPensum);
+                    drawPensumTable();
                 });
                 del.appendChild(delIcon);
 
@@ -321,7 +325,7 @@ const createPensumTable = pensum => {
 
         li.addEventListener("click", e => {
             actualPensum.addTerm();
-            drawPensumTable(actualPensum);
+            drawPensumTable();
         });
 
         ul.appendChild(li);
@@ -330,7 +334,7 @@ const createPensumTable = pensum => {
     return article;
 };
 
-const drawPensumTable = list => {
+const drawPensumTable = (list = "") => {
     const article = document.querySelector("article.pensum");
     if (article) article.remove();
     main = document.querySelector("main");
@@ -375,7 +379,7 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
 
         doc.querySelector(".addTerm").addEventListener("click", e => {
             actualPensum.addTerm();
-            drawPensumTable(actualPensum);
+            drawPensumTable();
         });
         doc.querySelector(".editCreate").addEventListener("click", e => {
             editCreate();
@@ -383,7 +387,7 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
 
         doc.querySelector(".addCourse").addEventListener("click", e => {
             addCourseAction();
-            drawPensumTable(actualPensum);
+            drawPensumTable();
         });
 
         doc.querySelector(".exportJSON").addEventListener("click", e => {
@@ -411,22 +415,24 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
 };
 
 let asideUpdate = (doc = document.querySelector("aside")) => {
-    switch (actualPensum.selectionMode) {
-        case 0:
-            doc.classList = ["star"];
-            break;
-        case 1:
-            doc.classList = ["path"];
-            break;
-        case 2:
-            doc.classList = ["view"];
-            break;
-        case 3:
-            doc.classList = ["edit"];
-            break;
-        default:
-            break;
-    }
+    if (doc)
+        switch (actualPensum.selectionMode) {
+            case 0:
+                doc.classList = ["star"];
+                break;
+            case 1:
+                doc.classList = ["path"];
+                break;
+            case 2:
+                doc.classList = ["view"];
+                break;
+            case 3:
+                doc.classList = ["edit"];
+                break;
+            default:
+                break;
+        }
+    else drawAside();
 };
 
 updateCourse = (element, index) => {
@@ -572,7 +578,7 @@ const elementAction = (element, index) => {
 
             ctx.stroke();
         });
-    } else if (course.available) {
+    } else if (course.available && !course.readonly) {
         course.availableNext = false;
         if (course.passed) {
             course.passed = false;
@@ -1007,7 +1013,7 @@ const addCourseAction = (term = actualPensum.terms) => {
         newCourse.available = false;
 
         actualPensum.addCourse(newCourse);
-        drawPensumTable(actualPensum);
+        drawPensumTable();
         return true;
     };
     drawCourseBanner(newCourse, submitAction);
@@ -1031,8 +1037,7 @@ const editCourseAction = newCourse => {
         newCourse.available = false;
 
         // actualPensum.addCourse(newCourse);
-        console.log(newCourse);
-        drawPensumTable(actualPensum);
+        drawPensumTable();
         return true;
     };
     drawCourseBanner(newCourse, submitAction);
@@ -1057,9 +1062,7 @@ const openAction = (accept, action) => {
         action(input.files[0]);
     });
     document.body.appendChild(input);
-    console.log(input);
     input.click();
-    // a =input
     input.remove();
 };
 
@@ -1074,9 +1077,7 @@ const openRecordAction = file => {
             drawError("Cargando pdf handler");
         else {
             pdfjsLib.GlobalWorkerOptions.workerSrc = "/JS/pdf.worker.mjs";
-            extractText(file).then(text => {
-                readRecord(text);
-            });
+            extractText(file).then(text => readRecord(text));
         }
     });
     reader.readAsDataURL(file);
@@ -1161,81 +1162,95 @@ const extractText = pdfUrl => {
 // UNEFA
 const readRecord = texto => {
     if (!texto.includes("UNIVERSIDAD NACIONAL EXPERIMENTALPOLITÉCNICA DE LA FUERZA ARMADA NACIONAL BOLIVARIANAU.N.E.F.ANÚCLEO")) {
-        console.log("Record academico no valido...");
+        drawError("Record académico no valido...");
         return 0;
     }
-    actualPensum.actualCredits = 0;
-    const codes = [
-        ...actualPensum.courses.map(e => {
-            e.passed = false;
-            e.availableNext = false;
-            return e.code;
-        }),
-    ];
 
     let contenido = [];
     contenido = texto.split(new RegExp("[0-9PIV]-[0-9]{4} "));
-    contenido.shift(); // Delete header
-    contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
 
-    contenido.forEach((e, i) => {
-        // I dont know if realy necessary... but
-        if (e.includes("Índice")) e = e.substr(0, e.indexOf("Índice"));
-        if (e.includes("REPARACIÓN")) e = e.substr(0, e.indexOf("REPARACIÓN"));
-        if (e.includes("- VA")) e = e.substr(0, e.indexOf("- VA"));
+    const careerRecord = contenido[0].split("Carrera: ")[1];
 
-        let courseRecord = e
-            .split(new RegExp("^(0[0-9])+? | [A-Z ÁÉÍÓÚÑ(),]{4,} "))
-            .filter(e => e != undefined && e != "")
-            .slice(0, 3);
-        // courseRecord.forEach(console.log)
-        // ["term", "code", "Calif. U.C Puntos"
-        // Calif. x U.C = Puntos
+    const careerPos = JSONlist["Career"].findIndex(e => e[1] == careerRecord);
+    importJSON(JSONdir + JSONlist["Career"][careerPos][0] + ".json").then(resImp => {
+        filterJSON(resImp).then(res => {
+            actualPensum = res;
+            actualPensum.actualCredits = 0;
+            const codes = [
+                ...actualPensum.courses
+                    .map(e => {
+                        e.passed = false;
+                        e.availableNext = false;
+                        return e.code;
+                    })
+                    .filter(code => code !== ""),
+            ];
+            drawPensumTable(); // pre-draw
+            contenido.shift(); // Delete header
+            contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
 
-        // Assingment
+            contenido.forEach((e, i) => {
 
-        if (courseRecord[2][0] != "0") {
-            for (let h = 0; h < codes.length; h++) {
-                const g = codes[h];
-                if (g != "") {
-                    if (courseRecord[1] == g) {
-                        actualPensum.actualCredits += actualPensum.courses[h].credits;
-                        actualPensum.courses[h].passed = true;
-                        actualPensum.courses[h].available = true;
-                        actualPensum.courses[h].readonly = true;
-                        break;
-                    }
-                } else if (e.includes("ELECTIVA")) {
-                    let broken = false;
-                    for (let i = 0; i < actualPensum.coursesByTerm[courseRecord[0] - 1].length; i++) {
-                        const w = actualPensum.coursesByTerm[courseRecord[0] - 1][i];
+                ["Índice", "REPARACIÓN", "- VA"].forEach(str => (e.includes(str) ? (e = e.split(str)[0].trim()) : null));
+                let courseRecord = e
+                    .split(new RegExp(/^(\d+)\s+([A-Z]+-\d+)\s+([A-ZÁÉÍÓÚÑ\s\d\.,\(\)]+?)(?:\s+(\d+)\s+\d+\s+\d+|\s+(APROBÓ))?$/))
+                    .filter(e => e != undefined && e != "");
 
-                        if (actualPensum.courses[w].name.includes("Electiva No") && e.includes("A NO")) {
-                            actualPensum.courses[w].passed = true;
-                            actualPensum.courses[w].available = true;
-                            actualPensum.courses[w].readonly = true;
-                            actualPensum.actualCredits += actualPensum.courses[w].credits;
-                            broken = true;
+                // ["term", "code", "Calif. U.C Puntos"
+                // Calif. x U.C = Puntos
+                // return;
+                // Assignment
+                if (courseRecord[3] == "APROBÓ") {
+                    const newCourse = structuredClone(courseFormat);
+                    newCourse.term = parseInt(courseRecord[0]);
+                    newCourse.code = courseRecord[1];
+                    newCourse.name = courseRecord[2]
+                        .split(" ")
+                        .map((e, i) => (i == 0 ? e.toUpperCase() : e.toLowerCase()))
+                        .join(" ");
+                    newCourse.available = true;
+                    newCourse.passed = true;
+                    newCourse.readonly = true;
+                    newCourse.corequired = [];
+                    newCourse.required = [];
+                    actualPensum.addCourse(newCourse);
+                } else if (courseRecord[3][0] != "0") {
+                    for (let h = 0; h < codes.length; h++) {
+                        if (courseRecord[1] == codes[h]) {
+                            actualPensum.actualCredits += actualPensum.courses[h].credits;
+                            actualPensum.courses[h].passed = true;
+                            actualPensum.courses[h].available = true;
+                            actualPensum.courses[h].readonly = true;
                             break;
-                        } else if (actualPensum.courses[w].name.includes("Electiva T") && e.includes("A TE")) {
-                            actualPensum.courses[w].passed = true;
-                            actualPensum.courses[w].available = true;
-                            actualPensum.courses[w].readonly = true;
-                            actualPensum.actualCredits += actualPensum.courses[w].credits;
-                            broken = true;
-                            break;
+                        } else if (e.includes("ELECTIVA")) {
+                            // Handler
+                            let broken = false;
+                            for (let w = 0; w < actualPensum.coursesByTerm[courseRecord[0] - 1].length; w++) {
+                                if (
+                                    (actualPensum.courses[w].name.includes("Electiva No") && e.includes("ELECTIVA NO")) ||
+                                    (actualPensum.courses[w].name.includes("Electiva T") && e.includes("ELECTIVA T"))
+                                ) {
+                                    if (!actualPensum.courses[w].passed) {
+                                        actualPensum.courses[w].passed = true;
+                                        actualPensum.courses[w].available = true;
+                                        actualPensum.courses[w].readonly = true;
+                                        actualPensum.actualCredits += actualPensum.courses[w].credits;
+                                    }
+                                    broken = true;
+                                    break;
+                                }
+                            }
+                            if (broken) break;
                         }
                     }
-                    if (broken) break;
                 }
-            }
-        }
+            });
+            const notReadOnlyCourses = actualPensum.courses.filter(course => course.readonly);
+            notReadOnlyCourses.forEach(viewCourseCalc);
+            drawPensumTable();
+            drawAside().then(a => modeChange(1));
+        });
     });
-    const notReadOnlyCourses = actualPensum.courses.filter(course => course.readonly);
-    notReadOnlyCourses.forEach(viewCourseCalc);
-    drawPensumTable(actualPensum);
-    modeChange(1);
-    asideUpdate();
 };
 
 // Mode change
@@ -1267,6 +1282,8 @@ const modeChange = mode => {
 
     // Clear Canvas
     canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
+    // Rev
     asideUpdate();
 };
 

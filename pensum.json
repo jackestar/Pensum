@@ -36,7 +36,9 @@
             "url":"view",
             "icons":[
                 {
-                    "src":"icons/article.svg"
+                    "src":"icons/article_256.svg",
+                    "sizes": "256x256",
+                    "purpose": "any"
                 }
             ]
         },
@@ -46,7 +48,9 @@
             "url":"create",
             "icons":[
                 {
-                    "src":"icons/new_window.svg"
+                    "src":"icons/new_window_256.svg",
+                    "sizes": "256x256",
+                    "purpose": "any"
                 }
             ]
         }
