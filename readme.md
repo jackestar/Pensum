@@ -23,6 +23,10 @@ Import and export the pensum in json format, as well as the student's academic r
 
 ## Copyright
 
-Material Design Icons
+### [Material Design Icons](https://github.com/google/material-design-icons) (Google)
+
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)
+
+### [PDF.js](https://mozilla.github.io/pdf.js/) (Mozilla Foundation)
 
 [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.html)

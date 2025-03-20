@@ -5,14 +5,11 @@ const urlsToCache = [
     "/favicon.svg",
     "/pensum.json",
     "/create.html",
-    "/create",
     "/styles/stylesP.css",
     "/pensums/list.json",
     "/pensums/electronica.json",
     "/view.html",
-    "/view",
     "/index.html",
-    "/index",
     "/icons/edit_square.svg",
     "/icons/light_mode.svg",
     "/icons/dark_mode.svg",
@@ -25,11 +22,13 @@ const urlsToCache = [
     "/icons/file_open.svg",
     "/icons/book.svg",
     "/icons/article.svg",
+    "/icons/article_256.svg",
     "/icons/draw.svg",
     "/icons/visibility.svg",
     "/icons/gesture_select.svg",
     "/icons/ink_selection.svg",
     "/icons/new_window.svg",
+    "/icons/new_window_256.svg",
     "/icons/quick_reference.svg",
     "/icons/hide_source.svg",
     "/icons/splitscreen_vertical.svg",
@@ -44,40 +43,45 @@ const urlsToCache = [
     "/aside.html",
 ];
 
-// Instalar el Service Worker y cachear los recursos
+// Install event: cache resources first
 self.addEventListener("install", event => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            console.log("Archivos cacheados");
-            return cache.addAll(urlsToCache);
-        })
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(urlsToCache))
+            .catch(err => console.error(`Cache addAll failed: ${err}`))
     );
 });
 
-// Interceptar las solicitudes y responder desde el cache
+// Fetch event: try network, fallback to cache (or index) if offline
 self.addEventListener("fetch", event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            // Devuelve el recurso del cache si existe, si no, sigue la solicitud normal
-            return response || fetch(event.request).then(response => {
-                return caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, response.clone());
-                    return response;
-                });
-            });
-        })
-    );
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).then(res => {
+        // Cache the response if valid and same-origin
+        if (res.ok && event.request.url.startsWith(self.location.origin)) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return res;
+      });
+    }).catch(() => {
+        // Fallback to index.html for navigation requests
+        return caches.match('/index.html') || new Response("Offline", { status: 503, statusText: "Offline" });
+    })
+  );
 });
 
-// Actualizar el cache cuando cambien los archivos
+// Activate event: delete old caches
 self.addEventListener("activate", event => {
+    console.log("activate", event);
+    clients.claim();
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
                     if (!cacheWhitelist.includes(cacheName)) {
-                        console.log("Cache viejo eliminado:", cacheName);
+                        console.log("Deleting old cache:", cacheName);
                         return caches.delete(cacheName);
                     }
                 })

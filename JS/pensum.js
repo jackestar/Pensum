@@ -111,6 +111,7 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
     pensum.elementSelected = {};
     pensum.actualCredits = 0;
     pensum.element = {};
+    pensum.coursesCareerRequired = [];
 
     pensum.coursesByTerm = Array.from({length: pensum.terms}, () => []);
 
@@ -139,6 +140,7 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
             });
         }
         if (course.careerRequirement) {
+            pensum.coursesCareerRequired.push(pensum.courses.indexOf(course));
             if (course.careerRequirement[0]) course.available = false;
             if (course.careerRequirement[1]) course.available = false;
         }
@@ -197,6 +199,28 @@ const addListElement = (name, icon, url) => {
     div.appendChild(h3);
     // div.addEventListener("click", e => history.pushState({}, "", url));
     return div;
+};
+
+const updateCourse = (element, index) => {
+    const course = actualPensum.courses[index];
+    if (!course) return;
+
+    if (course.available) {
+        element.classList.remove("unavailable");
+        if (course.corequired.length) element.classList.add("corequired");
+        else element.classList.remove("corequired");
+    } else {
+        element.classList.add("unavailable");
+    }
+    if (course.readonly) element.classList.add("readonly");
+    else {
+        element.classList.remove("readonly");
+        if (course.passed) element.classList.add("passed");
+        else element.classList.remove("passed");
+    }
+    if (course.availableNext) element.classList.add("available-next");
+    else element.classList.remove("available-next");
+    return element;
 };
 
 const createPensumTable = pensum => {
@@ -435,35 +459,14 @@ let asideUpdate = (doc = document.querySelector("aside")) => {
     else drawAside();
 };
 
-updateCourse = (element, index) => {
-    const course = actualPensum.courses[index];
-    if (!course) return;
-
-    if (course.available) {
-        element.classList.remove("unavailable");
-        if (course.corequired.length) element.classList.add("corequired");
-        else element.classList.remove("corequired");
-    } else {
-        element.classList.add("unavailable");
-    }
-    if (course.readonly) element.classList.add("readonly");
-    else {
-        element.classList.remove("readonly");
-        if (course.passed) element.classList.add("passed");
-        else element.classList.remove("passed");
-    }
-    if (course.availableNext) element.classList.add("available-next");
-    else element.classList.remove("available-next");
-    return element;
-};
-
 const calculateAvailability = course => {
     let av = true;
     if (course.prerequisites.length) av &= course.prerequisites.every(prereq => actualPensum.courses[prereq].passed);
     if (course.corequisites.length) av &= course.corequisites.every(coreq => actualPensum.courses[coreq].available || actualPensum.courses[coreq].availableNext);
-    if (course.careerRequirement) av &= course.careerRequirement[0] <= actualPensum.actualCredits;
+    if (course.careerRequirement) av &= course.careerRequirement[0] <= actualPensum.actualCredits - (course.passed ? course.credits : 0);
     return av;
 };
+
 let requiredAction = () => {};
 const requiredChain = (required, chain = []) => {
     required.forEach(req => {
@@ -587,6 +590,7 @@ const elementAction = (element, index) => {
             course.passed = true;
             actualPensum.actualCredits += course.credits;
         }
+
         if (actualPensum.selectionMode == 1) {
             // Path Mode
             pathCourseCalc(course);
@@ -594,6 +598,23 @@ const elementAction = (element, index) => {
             // View Mode
             viewCourseCalc(course);
         }
+    }
+
+    if (actualPensum.coursesCareerRequired.length) {
+        actualPensum.coursesCareerRequired.forEach(index => {
+            const course = actualPensum.courses[index];
+            if (!course.readonly)
+                if (calculateAvailability(course)) {
+                    course.available = true;
+                } else {
+                    if (course.passed) {
+                        course.passed = false;
+                        actualPensum.actualCredits -= course.credits;
+                    }
+                    course.available = false;
+                }
+            updateCourse(course.element, index);
+        });
     }
 
     updateCourse(element, index);
@@ -1190,7 +1211,6 @@ const readRecord = texto => {
             contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
 
             contenido.forEach((e, i) => {
-
                 ["Índice", "REPARACIÓN", "- VA"].forEach(str => (e.includes(str) ? (e = e.split(str)[0].trim()) : null));
                 let courseRecord = e
                     .split(new RegExp(/^(\d+)\s+([A-Z]+-\d+)\s+([A-ZÁÉÍÓÚÑ\s\d\.,\(\)]+?)(?:\s+(\d+)\s+\d+\s+\d+|\s+(APROBÓ))?$/))
