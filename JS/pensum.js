@@ -160,12 +160,10 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
 // Export Json
 
 const exportJson = (pensum = actualPensum) => {
-    pensum = formatFilter(actualPensum);
-    pensum.courses = [...pensum.courses].map((course, index) => {
-        course.corequisites.forEach((cor, i) => (pensum.courses[index].corequisites[i] = pensum.courses[cor].code));
-        course.prerequisites.forEach((pre, i) => (pensum.courses[index].prerequisites[i] = pensum.courses[pre].code));
+    pensum = formatFilter(pensum);
+    pensum.courses = pensum.courses.map(course => {
         return courseFilter(course);
-    });
+    })
 
     const jsonString = JSON.stringify(pensum);
     const url = URL.createObjectURL(new Blob([jsonString], {type: "application/json"}));
@@ -902,31 +900,36 @@ const drawCourseBanner = (newCourse, submitAction) => {
         pre.textContent = "Prerrequisito";
         pre.classList.add("preSelected");
         co.textContent = "Corequisito";
+
+        const ul = document.createElement("ul");
+
         pre.addEventListener("click", e => {
             e.preventDefault();
             selectMode = 0;
             pre.classList.add("preSelected");
             co.classList.remove("coSelected");
+            ul.classList.remove("cSel")
         });
         co.addEventListener("click", e => {
             e.preventDefault();
             selectMode = 1;
             co.classList.add("coSelected");
             pre.classList.remove("preSelected");
+            ul.classList.add("cSel")
         });
 
         mode.appendChild(pre);
         mode.appendChild(co);
         requisitesDiv.appendChild(mode);
-        const ul = document.createElement("ul");
 
         // all requisites are stored by code and not by index
         // when export this will be translated
+        // Never?
 
         const drawRequisitesTable = a => {
             ul.innerHTML = "";
             actualPensum.courses
-                .filter(course => course.term < parseInt(form.term.value))
+                .filter(course => course.term <= parseInt(form.term.value))
                 .forEach(course => {
                     const li = document.createElement("li");
                     const h5 = document.createElement("h5");
@@ -948,9 +951,11 @@ const drawCourseBanner = (newCourse, submitAction) => {
                     li.appendChild(h5);
                     li.appendChild(p);
 
+                    if (course.term == parseInt(form.term.value))
+                        li.classList.add("cHideable")
+
                     li.addEventListener("click", e => {
-                        [relation, otherRelation, requiredRelation] =
-                            selectMode === 0 ? ["prerequisites", "corequisites", "required"] : ["corequisites", "prerequisites", "corequisites"];
+                            let [relation, otherRelation, requiredRelation] = selectMode === 0 ? ["prerequisites", "corequisites", "required"] : ["corequisites", "prerequisites", "corequired"];
 
                         if (newCourse[relation].includes(course.code)) {
                             newCourse[relation] = newCourse[relation].filter(code => code !== course.code);
@@ -1013,6 +1018,7 @@ const highlightField = (fromFields, condition = true) => {
 const addCourseAction = (term = actualPensum.terms) => {
     const newCourse = structuredClone(courseFormat);
     newCourse.required = [];
+    newCourse.corequired = [];
     newCourse.term = term;
     const submitAction = (newCourse, form) => {
         let existingCourse = false;
@@ -1063,16 +1069,18 @@ const editCourseAction = newCourse => {
     };
     drawCourseBanner(newCourse, submitAction);
 };
-const importPensum = () => {
+
+const importPensum = (mode) => {
     const importPensumAction = file => {
         const reader = new FileReader();
         reader.addEventListener("load", e => {
-            drawPensumFromJson(JSON.parse(e.target.result), "imported");
+            drawPensumFromJson(JSON.parse(e.target.result), "imported",mode);
         });
         reader.readAsText(file);
     };
     openAction(".json,.txt", importPensumAction);
 };
+
 const openAction = (accept, action) => {
     // <input type="file" id="archivoInput" style="display: none;" accept=".txt,.pdf,.csv"></input>
     const input = document.createElement("input");
@@ -1198,14 +1206,13 @@ const readRecord = texto => {
             actualPensum = res;
             actualPensum.actualCredits = 0;
             const codes = [
-                ...actualPensum.courses
-                    .map(e => {
-                        e.passed = false;
-                        e.availableNext = false;
-                        return e.code;
-                    })
-                    .filter(code => code !== ""),
+                ...actualPensum.courses.map(e => {
+                    e.passed = false;
+                    e.availableNext = false;
+                    return e.code;
+                }),
             ];
+            
             drawPensumTable(); // pre-draw
             contenido.shift(); // Delete header
             contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
@@ -1235,34 +1242,34 @@ const readRecord = texto => {
                     newCourse.required = [];
                     actualPensum.addCourse(newCourse);
                 } else if (courseRecord[3][0] != "0") {
-                    for (let h = 0; h < codes.length; h++) {
-                        if (courseRecord[1] == codes[h]) {
-                            actualPensum.actualCredits += actualPensum.courses[h].credits;
-                            actualPensum.courses[h].passed = true;
-                            actualPensum.courses[h].available = true;
-                            actualPensum.courses[h].readonly = true;
-                            break;
-                        } else if (e.includes("ELECTIVA")) {
-                            // Handler
-                            let broken = false;
-                            for (let w = 0; w < actualPensum.coursesByTerm[courseRecord[0] - 1].length; w++) {
-                                if (
-                                    (actualPensum.courses[w].name.includes("Electiva No") && e.includes("ELECTIVA NO")) ||
-                                    (actualPensum.courses[w].name.includes("Electiva T") && e.includes("ELECTIVA T"))
-                                ) {
-                                    if (!actualPensum.courses[w].passed) {
-                                        actualPensum.courses[w].passed = true;
-                                        actualPensum.courses[w].available = true;
-                                        actualPensum.courses[w].readonly = true;
-                                        actualPensum.actualCredits += actualPensum.courses[w].credits;
-                                    }
-                                    broken = true;
-                                    break;
+                    if (e.includes("ELECTIVA")) {
+                        console.log(e, "I");
+                        // Select by real semester...
+                        for (let w = 0; w < codes.length; w++) {
+                            if (
+                                (actualPensum.courses[w].name.includes("Electiva N") && e.includes("ELECTIVA N")) ||
+                                (actualPensum.courses[w].name.includes("Electiva T") && e.includes("ELECTIVA T"))
+                            ) {
+                                if (!actualPensum.courses[w].passed) {
+                                    actualPensum.courses[w].code = courseRecord[1];
+                                    actualPensum.courses[w].passed = true;
+                                    actualPensum.courses[w].available = true;
+                                    actualPensum.courses[w].readonly = true;
+                                    actualPensum.actualCredits += actualPensum.courses[w].credits;
                                 }
+                                break;
                             }
-                            if (broken) break;
                         }
-                    }
+                    } else
+                        for (let h = 0; h < codes.length; h++) {
+                            if (courseRecord[1] == codes[h]) {
+                                actualPensum.actualCredits += actualPensum.courses[h].credits;
+                                actualPensum.courses[h].passed = true;
+                                actualPensum.courses[h].available = true;
+                                actualPensum.courses[h].readonly = true;
+                                break;
+                            }
+                        }
                 }
             });
             const notReadOnlyCourses = actualPensum.courses.filter(course => course.readonly);

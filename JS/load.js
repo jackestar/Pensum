@@ -108,21 +108,29 @@ window.addEventListener("popstate", async e => {
     }
 });
 
-const drawPensumFromJson = async (json, linkname) => {
+const drawPensumFromJson = async (json, linkname, mode = 0) => {
     const pensum = await filterJSON(json);
     if (pensum.length == 0) {
-        drawError(`Pensum ${item} no cargado`);
+        drawError(`Pensum ${linkname} no cargado`);
         return;
     }
-
+    
+    // Set the mode explicitly
+    pensum.selectionMode = mode;
+    actualPensum = pensum;
     actualPensum.linkName = linkname;
 
-    actualPensum.selectionMode = 0;
+    let backTo;
+    if (mode === 0) {
+        backTo = "/view.html";
+    } else if (mode === 3) {
+        backTo = "/create.html";
+    } else {
+        backTo = "/index.html";
+    }
 
-    await drawAside("/view.html");
-
-    drawPensumTable(pensum);
-
+    await drawAside(backTo);
+    drawPensumTable(actualPensum);
     initCanvas();
 };
 
@@ -219,6 +227,7 @@ const formEdit = (doc = document) => {
             assignCreate();
             drawPensumTable();
         });
+
     // create pensum
     const create = form.querySelector("button#create");
     if (create) {
@@ -234,4 +243,12 @@ const formEdit = (doc = document) => {
             initCanvas();
         });
     }
+
+        // Import Pensum
+        const importP = form.querySelector("button#open");
+        if (importP)
+            importP.addEventListener("click", async e => {
+                actualPensum.selectionMode = 3;
+                importPensum(3);
+            });
 };

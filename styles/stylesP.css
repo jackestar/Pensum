@@ -680,6 +680,16 @@ div.addBanner form div.form .coSelected {
     background: var(--colorE-50);
 }
 
+/* Hide == coprel */
+
+div.addBanner ul li.cHideable {
+    display: none;
+}
+
+div.addBanner ul.cSel li.cHideable {
+    display: flex;
+}
+
 body div.banner.importBanner {
     z-index: 1011;
 }
