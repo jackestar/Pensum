@@ -122,38 +122,46 @@ const filterJSON = async (json, formatVersion = FormatVersion) => {
         course.passed = false;
         course.required ||= [];
         course.corequired ||= [];
+        course.careerRequirement ||= [0, 0];
         course.readonly ||= false;
-        if (sem) course.available = false;
-        if (!course.prerequisites.length) course.available = true;
-        if (course.corequisites.length) {
-            course.corequisites.forEach((corequisite, index) => {
-                const co = pensum.courses.find(c => c.code === corequisite);
-                co.corequired ? co.corequired.push(pensum.courses.indexOf(course)) : (co.corequired = [pensum.courses.indexOf(course)]);
-                course.corequisites[index] = pensum.courses.indexOf(co);
-            });
+
+        if (actualPensum.selectionMode !== 3) {
+            if (sem) course.available = false;
+            if (!course.prerequisites.length) course.available = true;
+            if (course.corequisites.length) {
+                course.corequisites.forEach((corequisite, index) => {
+                    const co = pensum.courses.find(c => c.code === corequisite);
+                    console.log(co,course.name)
+                    co.corequired ? co.corequired.push(pensum.courses.indexOf(course)) : (co.corequired = [pensum.courses.indexOf(course)]);
+                    course.corequisites[index] = pensum.courses.indexOf(co);
+                });
+            }
+            if (course.prerequisites.length) {
+                course.prerequisites.forEach((prerequisite, index) => {
+                    const pr = pensum.courses.find(c => c.code === prerequisite);
+                    pr.required ? pr.required.push(pensum.courses.indexOf(course)) : (pr.required = [pensum.courses.indexOf(course)]);
+                    course.prerequisites[index] = pensum.courses.indexOf(pr);
+                });
+            }
+            if (course.careerRequirement) {
+                pensum.coursesCareerRequired.push(pensum.courses.indexOf(course));
+                if (course.careerRequirement[0]) course.available = false;
+                if (course.careerRequirement[1]) course.available = false;
+            }
         }
-        if (course.prerequisites.length) {
-            course.prerequisites.forEach((prerequisite, index) => {
-                const pr = pensum.courses.find(c => c.code === prerequisite);
-                pr.required ? pr.required.push(pensum.courses.indexOf(course)) : (pr.required = [pensum.courses.indexOf(course)]);
-                course.prerequisites[index] = pensum.courses.indexOf(pr);
-            });
-        }
-        if (course.careerRequirement) {
-            pensum.coursesCareerRequired.push(pensum.courses.indexOf(course));
-            if (course.careerRequirement[0]) course.available = false;
-            if (course.careerRequirement[1]) course.available = false;
-        }
+        else course.available = true;
         pensum.coursesByTerm[sem].push(course);
         return course;
     });
-    pensum.courses.forEach(course => {
-        if (course.corequisites.length && course.term > 1) {
-            course.available &= course.corequisites.every(co => {
-                pensum.courses[co].available;
-            });
-        }
-    });
+
+    if (actualPensum.selectionMode !== 3)
+        pensum.courses.forEach(course => {
+            if (course.corequisites.length && course.term > 1) {
+                course.available &= course.corequisites.every(co => {
+                    pensum.courses[co].available;
+                });
+            }
+        });
     return pensum;
 };
 
@@ -163,7 +171,7 @@ const exportJson = (pensum = actualPensum) => {
     pensum = formatFilter(pensum);
     pensum.courses = pensum.courses.map(course => {
         return courseFilter(course);
-    })
+    });
 
     const jsonString = JSON.stringify(pensum);
     const url = URL.createObjectURL(new Blob([jsonString], {type: "application/json"}));
@@ -908,14 +916,14 @@ const drawCourseBanner = (newCourse, submitAction) => {
             selectMode = 0;
             pre.classList.add("preSelected");
             co.classList.remove("coSelected");
-            ul.classList.remove("cSel")
+            ul.classList.remove("cSel");
         });
         co.addEventListener("click", e => {
             e.preventDefault();
             selectMode = 1;
             co.classList.add("coSelected");
             pre.classList.remove("preSelected");
-            ul.classList.add("cSel")
+            ul.classList.add("cSel");
         });
 
         mode.appendChild(pre);
@@ -951,11 +959,11 @@ const drawCourseBanner = (newCourse, submitAction) => {
                     li.appendChild(h5);
                     li.appendChild(p);
 
-                    if (course.term == parseInt(form.term.value))
-                        li.classList.add("cHideable")
+                    if (course.term == parseInt(form.term.value)) li.classList.add("cHideable");
 
                     li.addEventListener("click", e => {
-                            let [relation, otherRelation, requiredRelation] = selectMode === 0 ? ["prerequisites", "corequisites", "required"] : ["corequisites", "prerequisites", "corequired"];
+                        let [relation, otherRelation, requiredRelation] =
+                            selectMode === 0 ? ["prerequisites", "corequisites", "required"] : ["corequisites", "prerequisites", "corequired"];
 
                         if (newCourse[relation].includes(course.code)) {
                             newCourse[relation] = newCourse[relation].filter(code => code !== course.code);
@@ -1070,11 +1078,11 @@ const editCourseAction = newCourse => {
     drawCourseBanner(newCourse, submitAction);
 };
 
-const importPensum = (mode) => {
+const importPensum = mode => {
     const importPensumAction = file => {
         const reader = new FileReader();
         reader.addEventListener("load", e => {
-            drawPensumFromJson(JSON.parse(e.target.result), "imported",mode);
+            drawPensumFromJson(JSON.parse(e.target.result), "imported", mode);
         });
         reader.readAsText(file);
     };
@@ -1212,7 +1220,7 @@ const readRecord = texto => {
                     return e.code;
                 }),
             ];
-            
+
             drawPensumTable(); // pre-draw
             contenido.shift(); // Delete header
             contenido = contenido.filter(e => !e.includes("CINU") && !e.includes("REPROBÓ"));
