@@ -1,5 +1,5 @@
 // Cache resources
-const CACHE_NAME = "PWA-cache";
+const CACHE_NAME = "PWA-cache-v2"; // Updated cache name to avoid conflicts
 const urlsToCache = [
     "/",
     "/favicon.svg",
@@ -46,7 +46,8 @@ const urlsToCache = [
 // Install event: cache resources first
 self.addEventListener("install", event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
+        caches
+            .open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
             .catch(err => console.error(`Cache addAll failed: ${err}`))
     );
@@ -54,21 +55,29 @@ self.addEventListener("install", event => {
 
 // Fetch event: try network, fallback to cache (or index) if offline
 self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request).then(res => {
-        // Cache the response if valid and same-origin
-        if (res.ok && event.request.url.startsWith(self.location.origin)) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return res;
-      });
-    }).catch(() => {
-        // Fallback to index.html for navigation requests
-        return caches.match('/index.html') || new Response("Offline", { status: 503, statusText: "Offline" });
-    })
-  );
+    event.respondWith(
+        caches
+            .match(event.request)
+            .then(response => {
+                return (
+                    response ||
+                    fetch(event.request).then(res => {
+                        // Cache the response if valid and same-origin
+                        if (res.ok && event.request.url.startsWith(self.location.origin)) {
+                            const clone = res.clone();
+                            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                        }
+                        return res;
+                    })
+                );
+            })
+            .catch(() => {
+                // Fallback to index.html for navigation requests
+                if (event.request.mode === "navigate") {
+                    return caches.match("/index.html");
+                }
+            })
+    );
 });
 
 // Activate event: delete old caches
