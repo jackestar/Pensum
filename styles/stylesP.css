@@ -870,11 +870,38 @@ article.pensum ul.add:hover {
     transition: 0.2s ease-in;
 }
 
-/* responsive forced again*/
+/* responsive*/
 
 @media (orientation: portrait) {
     body div.container > * {
-        transform-origin: top left;
-        transform: scale(.5);
+        /* transform-origin: top left; */
+        /* transform: scale(.5); */
+        /* width:50%; */
+    }
+    article.pensum ul.term {
+        padding: .5em;
+    }
+
+    article.pensum ul.term li {
+        padding: .25em;
+        margin: 0.3em 0;
+        font-size:75%;
+        min-width: 10em;
+    }
+
+    body {
+        flex-direction: column;
+    }
+
+    aside {
+        flex-direction: row;
+        overflow: scroll;
+    }
+    aside ul {
+        flex-direction: row;
+    }
+    aside>div {
+        display:flex;
+        flex-direction: row;
     }
 }

@@ -434,7 +434,7 @@ const drawAside = async (back = "/index.html", mode = actualPensum.selectionMode
         document.body.appendChild(doc);
 
         // remove old asides
-        // foced solution for now
+        // forced solution for now
         document.querySelectorAll("aside").forEach(aside => {
             if (aside != doc) aside.remove();
         });
@@ -606,22 +606,22 @@ const elementAction = (element, index) => {
         }
     }
 
-    if (actualPensum.coursesCareerRequired.length) {
-        actualPensum.coursesCareerRequired.forEach(index => {
-            const course = actualPensum.courses[index];
-            if (!course.readonly)
-                if (calculateAvailability(course)) {
-                    course.available = true;
-                } else {
-                    if (course.passed) {
-                        course.passed = false;
-                        actualPensum.actualCredits -= course.credits;
-                    }
-                    course.available = false;
-                }
-            updateCourse(course.element, index);
-        });
-    }
+    // if (actualPensum.coursesCareerRequired.length && actualPensum.selectionMode !== 2) {
+    //     actualPensum.coursesCareerRequired.forEach(index => {
+    //         const course = actualPensum.courses[index];
+    //         if (!course.readonly)
+    //             if (calculateAvailability(course)) {
+    //                 course.available = true;
+    //             } else {
+    //                 if (course.passed) {
+    //                     course.passed = false;
+    //                     actualPensum.actualCredits -= course.credits;
+    //                 }
+    //                 course.available = false;
+    //             }
+    //         updateCourse(course.element, index);
+    //     });
+    // }
 
     updateCourse(element, index);
     return [element, index];
@@ -824,7 +824,7 @@ const drawCourseBanner = (newCourse, submitAction) => {
             min: 0,
         },
     ];
-    const hoursFilds = [
+    const hoursFields = [
         {
             label: "Teoría",
             name: "hoursTheory",
@@ -892,7 +892,7 @@ const drawCourseBanner = (newCourse, submitAction) => {
     h4.textContent = "Horas";
     hoursDiv.appendChild(h4);
 
-    hoursFilds.forEach(field => hoursDiv.appendChild(appendField(field)));
+    hoursFields.forEach(field => hoursDiv.appendChild(appendField(field)));
 
     form.appendChild(hoursDiv);
 
